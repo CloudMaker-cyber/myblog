@@ -1,4 +1,4 @@
-import type { ExecuteValues, RowDataPacket } from 'mysql2';
+import type { ExecuteValues, ResultSetHeader, RowDataPacket } from 'mysql2';
 import { createPool } from 'mysql2/promise';
 
 import { config } from './config.js';
@@ -34,4 +34,16 @@ export async function query<T extends RowDataPacket[]>(
 ): Promise<T> {
   const [rows] = await pool.execute<T>(sql, params);
   return rows;
+}
+
+/**
+ * 写操作专用：INSERT / UPDATE / DELETE。
+ * 返回 ResultSetHeader，其中 insertId / affectedRows 是业务需要的信息。
+ */
+export async function execute(
+  sql: string,
+  params: ExecuteValues[] = [],
+): Promise<ResultSetHeader> {
+  const [result] = await pool.execute<ResultSetHeader>(sql, params);
+  return result;
 }
