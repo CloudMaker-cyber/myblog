@@ -1,0 +1,714 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MyBlog · 方向 A · 刊物 v2</title>
+<style>
+  :root {
+    --ground: #F2EFE7;
+    --ground-2: #ECE7DA;
+    --ink: #1A1A1A;
+    --ink-2: #4A4638;
+    --muted: #736D5A;
+    --red: #C7322E;
+    --red-dark: #A82622;
+    --olive: #5E6347;
+    --rule: #C8C2B0;
+    --serif: "Source Han Serif SC", "Noto Serif SC", "Songti SC", SimSun, "Times New Roman", serif;
+    --sans: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+    --mono: "JetBrains Mono", "Cascadia Mono", Consolas, "Courier New", monospace;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+    text-wrap: pretty;
+  }
+  a { color: inherit; text-decoration: none; }
+  button { font-family: inherit; }
+
+  /* ---------- v0 审稿条 ---------- */
+  .v0bar {
+    position: sticky;
+    top: 0;
+    z-index: 60;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 18px;
+    background: #14120F;
+    color: #B8B09A;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    border-bottom: 1px solid #2A261F;
+  }
+  .v0tag { font-family: var(--mono); color: #E6DFCB; margin-right: 12px; }
+  .v0bar button {
+    background: transparent;
+    border: 1px solid #3A342A;
+    color: #B8B09A;
+    padding: 4px 12px;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+  }
+  .v0bar button.is-active { background: #E6DFCB; color: #14120F; border-color: #E6DFCB; }
+  .v0note { margin-left: auto; color: #6E6757; }
+
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 40px; }
+  .screen { display: none; }
+  .screen.is-active { display: block; }
+
+  /* ---------- 刊头 ---------- */
+  .masthead { padding: 30px 0 0; border-top: 1px solid var(--ink); }
+  .masthead-inner {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 40px;
+    padding-bottom: 14px;
+  }
+  .masthead-name {
+    font-family: var(--serif);
+    font-size: 46px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.01em;
+  }
+  .masthead-meta {
+    text-align: right;
+    font-size: 10px;
+    line-height: 1.95;
+    letter-spacing: 0.16em;
+    color: var(--muted);
+  }
+  .rule-double {
+    height: 3px;
+    border-top: 1px solid var(--ink);
+    border-bottom: 1px solid var(--ink);
+  }
+
+  /* ---------- 导航条 ---------- */
+  .nav-bar { border-bottom: 1px solid var(--rule); }
+  .nav-inner { display: flex; align-items: center; height: 46px; gap: 26px; }
+  .nav a {
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    color: var(--ink-2);
+    padding: 6px 0;
+    border-bottom: 2px solid transparent;
+  }
+  .nav a:hover { color: var(--ink); }
+  .nav a.is-current { color: var(--ink); border-bottom-color: var(--red); }
+  .nav-actions { margin-left: auto; display: flex; align-items: center; gap: 22px; }
+  .search-link {
+    background: none;
+    border: 0;
+    padding: 0;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    color: var(--ink-2);
+    cursor: pointer;
+  }
+  .search-link:hover { color: var(--ink); }
+  .link-quiet { font-size: 11px; letter-spacing: 0.16em; color: var(--ink-2); }
+  .link-quiet:hover { color: var(--red); }
+  .btn-primary {
+    display: inline-block;
+    background: var(--red);
+    color: #FAF7EF;
+    border: 0;
+    padding: 10px 18px;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    cursor: pointer;
+    transition: background 160ms ease;
+  }
+  .btn-primary:hover { background: var(--red-dark); }
+
+  /* ---------- 首页列表 ---------- */
+  .listing { padding: 44px 0 20px; }
+  .list-head {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--ink);
+  }
+  .list-head h2 {
+    margin: 0;
+    font-family: var(--serif);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+  }
+  .list-head span { font-size: 11px; letter-spacing: 0.12em; color: var(--muted); }
+
+  .post {
+    display: grid;
+    grid-template-columns: 78px 1fr 168px;
+    gap: 0 26px;
+    padding: 26px 0;
+    border-bottom: 1px solid var(--rule);
+    transition: background 160ms ease;
+  }
+  .post:hover { background: var(--ground-2); }
+  .post-date {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    padding-top: 7px;
+    letter-spacing: 0.04em;
+  }
+  .post-date small { display: block; font-size: 10px; color: #9A927E; letter-spacing: 0.1em; margin-top: 3px; }
+  .post-main { border-left: 1px solid var(--rule); padding-left: 26px; }
+  .kicker {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--red);
+    margin-bottom: 9px;
+  }
+  .kicker .no { color: var(--muted); letter-spacing: 0.14em; }
+  .post h3 {
+    margin: 0;
+    font-family: var(--serif);
+    font-size: 27px;
+    font-weight: 600;
+    line-height: 1.45;
+  }
+  .post:hover h3 { color: var(--red-dark); }
+  .dek {
+    margin: 9px 0 0;
+    max-width: 48ch;
+    font-family: var(--serif);
+    font-size: 15px;
+    line-height: 1.85;
+    color: var(--olive);
+  }
+  .post-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding-top: 7px;
+    text-align: right;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+  }
+  .post-meta .mono { font-family: var(--mono); font-size: 10px; }
+
+  .pager {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 10px 0 90px;
+    padding-top: 18px;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    color: var(--ink-2);
+  }
+  .pager a { border-bottom: 1px solid var(--rule); }
+  .pager a:hover { border-bottom-color: var(--red); color: var(--red); }
+
+  /* ---------- 文章详情 ---------- */
+  .article { padding: 54px 0 120px; }
+  .article-head { max-width: 760px; margin: 0 auto; }
+  .article-head .kicker { margin-bottom: 16px; }
+  .article-head h1 {
+    margin: 0 0 20px;
+    font-family: var(--serif);
+    font-size: clamp(34px, 4.2vw, 46px);
+    font-weight: 600;
+    line-height: 1.35;
+    letter-spacing: 0.005em;
+  }
+  .byline {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 0;
+    border-top: 1px solid var(--ink);
+    border-bottom: 1px solid var(--rule);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+  }
+  .byline .author { color: var(--ink); }
+  .byline .grow { flex: 1; }
+
+  .article-body {
+    max-width: 34em;
+    margin: 38px auto 0;
+    font-family: var(--serif);
+    font-size: 17.5px;
+    line-height: 1.95;
+    color: #23221C;
+  }
+  .article-body p { margin: 0 0 1.5em; }
+  .dropcap {
+    float: left;
+    font-family: var(--serif);
+    font-size: 62px;
+    line-height: 0.92;
+    font-weight: 700;
+    padding: 4px 12px 0 0;
+    color: var(--ink);
+  }
+  .article-body h2 {
+    margin: 2.2em 0 0.9em;
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1.5;
+    border-top: 1px solid var(--rule);
+    padding-top: 18px;
+  }
+  .sec-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: var(--red);
+    margin-right: 12px;
+    vertical-align: 2px;
+  }
+  .article-body blockquote {
+    margin: 2em 0;
+    padding: 6px 0 6px 26px;
+    border-left: 2px solid var(--red);
+    font-size: 21px;
+    line-height: 1.75;
+    color: var(--olive);
+  }
+  .article-body code {
+    font-family: var(--mono);
+    font-size: 0.88em;
+    background: var(--ground-2);
+    padding: 1px 5px;
+  }
+  .signoff {
+    margin-top: 3em;
+    padding-top: 18px;
+    border-top: 1px solid var(--ink);
+    font-family: var(--sans);
+    font-size: 11px;
+    line-height: 2;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+  }
+  .signoff strong { color: var(--ink); font-weight: 600; letter-spacing: 0.08em; }
+
+  /* ---------- 阅读标尺 ---------- */
+  .reading-rule {
+    position: fixed;
+    top: 22vh;
+    left: max(18px, calc((100vw - 1180px) / 2 - 58px));
+    width: 34px;
+    z-index: 30;
+    display: none;
+  }
+  .reading-rule.is-on { display: block; }
+  .reading-rule-track {
+    position: relative;
+    width: 1px;
+    height: 46vh;
+    background: var(--rule);
+    margin-left: 12px;
+  }
+  .reading-rule-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: 0;
+    background: var(--red);
+  }
+  .reading-rule-ticks {
+    position: absolute;
+    top: 0;
+    left: 12px;
+    height: 46vh;
+    width: 7px;
+    background-image: repeating-linear-gradient(
+      to bottom,
+      var(--rule) 0 1px,
+      transparent 1px 10%
+    );
+  }
+  .reading-rule-percent {
+    display: block;
+    margin-top: 10px;
+    margin-left: 12px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+  }
+
+  /* ---------- 认证页 ---------- */
+  .auth-grid {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 88px;
+    padding: 68px 0 110px;
+    align-items: start;
+  }
+  .auth-editorial { border-right: 1px solid var(--rule); padding-right: 88px; }
+  .auth-editorial h1 {
+    margin: 0 0 22px;
+    font-family: var(--serif);
+    font-size: clamp(40px, 5vw, 54px);
+    font-weight: 600;
+    line-height: 1.16;
+  }
+  .auth-editorial .dek { max-width: 24ch; }
+
+  .mini { margin-top: 48px; }
+  .mini-head {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .mini-item {
+    display: block;
+    padding: 15px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .mini-title {
+    display: block;
+    font-family: var(--serif);
+    font-size: 17px;
+    line-height: 1.5;
+  }
+  .mini-item:hover .mini-title { color: var(--red); }
+  .mini-meta {
+    display: block;
+    margin-top: 4px;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    color: var(--muted);
+  }
+
+  .auth-form label {
+    display: block;
+    margin: 30px 0 6px;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--muted);
+  }
+  .auth-form label:first-of-type { margin-top: 0; }
+  .auth-form input {
+    width: 100%;
+    border: 0;
+    border-bottom: 1px solid var(--rule);
+    border-radius: 0;
+    background: transparent;
+    padding: 9px 0;
+    font-size: 15px;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 160ms ease;
+  }
+  .auth-form input:focus { border-bottom-color: var(--red); }
+  .auth-form input::placeholder { color: #A7A08E; }
+  .field-hint { margin: 8px 0 0; font-size: 11px; line-height: 1.7; color: var(--muted); }
+  .btn-wide { width: 100%; padding: 15px; margin-top: 34px; font-size: 11px; letter-spacing: 0.2em; }
+  .form-foot { margin-top: 20px; font-size: 12px; color: var(--muted); }
+  .form-foot a { color: var(--ink); border-bottom: 1px solid var(--red); padding-bottom: 1px; }
+  .form-foot a:hover { color: var(--red); }
+
+  .site-foot {
+    border-top: 1px solid var(--rule);
+    padding: 22px 0 40px;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+  }
+
+  @media (max-width: 900px) {
+    .wrap { padding: 0 22px; }
+    .nav { display: none; }
+    .masthead-name { font-size: 34px; }
+    .masthead-meta { display: none; }
+    .auth-grid { grid-template-columns: 1fr; gap: 44px; }
+    .auth-editorial { border-right: 0; padding-right: 0; border-bottom: 1px solid var(--rule); padding-bottom: 36px; }
+    .post { grid-template-columns: 58px 1fr; gap: 0 16px; }
+    .post-main { padding-left: 18px; }
+    .post-meta { grid-column: 2; flex-direction: row; gap: 14px; text-align: left; margin-top: 10px; }
+    .reading-rule { display: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="v0bar">
+  <span class="v0tag">v0 · 方向 A · 刊物</span>
+  <button data-screen="home" class="is-active">首页</button>
+  <button data-screen="article">文章详情</button>
+  <button data-screen="login">登录</button>
+  <button data-screen="register">注册</button>
+  <span class="v0note">占位内容，仅用于确认概念</span>
+</div>
+
+<div class="masthead">
+  <div class="wrap masthead-inner">
+    <div class="masthead-name">MyBlog</div>
+    <div class="masthead-meta">
+      第 001 期 · 2026 年 10 月<br>
+      技术文章与日常思考
+    </div>
+  </div>
+</div>
+<div class="wrap"><div class="rule-double"></div></div>
+
+<div class="nav-bar">
+  <div class="wrap nav-inner">
+    <nav class="nav">
+      <a href="#" class="is-current">首页</a>
+      <a href="#">技术文章</a>
+      <a href="#">日常思考</a>
+      <a href="#">归档</a>
+    </nav>
+    <div class="nav-actions">
+      <button class="search-link" type="button">搜索</button>
+      <a class="link-quiet" href="#">登录</a>
+      <a class="btn-primary" href="#">注册</a>
+    </div>
+  </div>
+</div>
+
+<div class="reading-rule" id="readingRule" aria-hidden="true">
+  <div class="reading-rule-track">
+    <div class="reading-rule-fill" id="readingFill"></div>
+    <div class="reading-rule-ticks"></div>
+  </div>
+  <span class="reading-rule-percent" id="readingPercent">00</span>
+</div>
+
+<!-- ============ 首页 ============ -->
+<section class="screen is-active" id="screen-home">
+  <div class="wrap listing">
+    <div class="list-head">
+      <h2>最新发布</h2>
+      <span>按发布时间倒序 · 第 1 页 / 共 3 页</span>
+    </div>
+
+    <article class="post">
+      <div class="post-date">10.20<small>TUE</small></div>
+      <div class="post-main">
+        <div class="kicker">技术文章 · 工程实践 <span class="no">· No. 0042</span></div>
+        <h3>把一次线上事故拆成可复现的五个步骤</h3>
+        <p class="dek">导语占位。一两句话说明这篇要解决什么问题，读者为什么值得读下去。</p>
+      </div>
+      <div class="post-meta">
+        <span>作者名</span>
+        <span>约 8 分钟</span>
+        <span class="mono">1,204 VIEWS</span>
+      </div>
+    </article>
+
+    <article class="post">
+      <div class="post-date">10.18<small>SUN</small></div>
+      <div class="post-main">
+        <div class="kicker">日常思考 · 学习记录 <span class="no">· No. 0041</span></div>
+        <h3>学一门新语言时，我先放弃的三件事</h3>
+        <p class="dek">导语占位。日常思考类文章不需要结论，只需要把当时的判断留下来。</p>
+      </div>
+      <div class="post-meta">
+        <span>作者名</span>
+        <span>约 4 分钟</span>
+        <span class="mono">486 VIEWS</span>
+      </div>
+    </article>
+
+    <article class="post">
+      <div class="post-date">10.16<small>FRI</small></div>
+      <div class="post-main">
+        <div class="kicker">技术文章 · 数据库 <span class="no">· No. 0040</span></div>
+        <h3>为什么外键约束比代码里的 if 判断更可靠</h3>
+        <p class="dek">导语占位。标题本身已经说明观点，导语只需要补一句读者会关心的代价。</p>
+      </div>
+      <div class="post-meta">
+        <span>作者名</span>
+        <span>约 6 分钟</span>
+        <span class="mono">923 VIEWS</span>
+      </div>
+    </article>
+
+    <div class="pager">
+      <a href="#">上一页</a>
+      <span>第 1 页 / 共 3 页</span>
+      <a href="#">下一页</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 文章详情 ============ -->
+<section class="screen" id="screen-article">
+  <article class="article wrap">
+    <div class="article-head">
+      <div class="kicker">技术文章 · 工程实践 <span class="no">· No. 0042</span></div>
+      <h1>先把阅读做好，再谈其他功能</h1>
+      <div class="byline">
+        <span class="author">作者名</span>
+        <span>2026 年 10 月 20 日</span>
+        <span class="grow"></span>
+        <span>约 8 分钟</span>
+        <span>1,204 次阅读</span>
+      </div>
+    </div>
+
+    <div class="article-body">
+      <p><span class="dropcap">一</span>个博客平台最容易做错的事，是把力气花在功能清单上，而不是花在读者真正停留的那块区域。读者不会因为你多了一个标签筛选而留下，却会因为一段读起来硌眼的正文而离开。所以这套界面先解决一件事：让一篇长文在被阅读的十分钟里保持安静。</p>
+      <p>安静不是少放东西，而是每一处都有理由。分隔线代替阴影，是因为纸面上的线不会发光；字号拉开差距，是因为眼睛需要一眼分清标题和正文的层级；颜色只用一种红，是因为强调一旦变多就不再是强调。</p>
+
+      <h2><span class="sec-num">01</span>把平台当成一本连续出版的刊物</h2>
+      <p>刊头、期号、编号，这些看起来是装饰，其实解决了一个具体问题：读者需要知道自己读到的是哪一篇、什么时候写的、属于哪一类。编号 <code>No. 0042</code> 比一串数据库 id 更像"第 42 篇"，日期栏让时间倒序这件事变得可见，而不是只写在排序规则里。</p>
+
+      <blockquote>读一篇技术文章，读者最想要的是可靠，其次才是好看。</blockquote>
+
+      <h2><span class="sec-num">02</span>阅读标尺是给读者的位置感</h2>
+      <p>页面左侧那根竖线会随滚动填红。它不提供额外信息，只回答一个问题：还剩多少。长文最怕的不是内容难，而是不知道尽头在哪，于是提前放弃。</p>
+      <p>下面这段用来把正文撑长，方便观察标尺的填充效果。正文行高取 1.95，是因为中文的笔画密度比西文高，行距不足时整段会糊成一片；每行控制在 34 个汉字左右，是眼睛不必大幅移动就能换行的宽度。这些数字并不神圣，但它们需要被固定下来，否则每一页都会长得不一样。</p>
+    </div>
+
+    <div class="article-body">
+      <div class="signoff">
+        <strong>No. 0042</strong><br>
+        写于 2026 年 10 月 20 日 · 分类 工程实践 · 标签 设计系统 / 排版<br>
+        本文采用 Markdown 撰写
+      </div>
+    </div>
+  </article>
+</section>
+
+<!-- ============ 登录 ============ -->
+<section class="screen" id="screen-login">
+  <div class="wrap auth-grid">
+    <div class="auth-editorial">
+      <div class="kicker">账户 / ACCOUNT</div>
+      <h1>回到<br>写作台</h1>
+      <p class="dek">登录后继续编辑草稿，或者写下今天的想法。</p>
+
+      <div class="mini">
+        <div class="mini-head">本期目录</div>
+        <a class="mini-item" href="#">
+          <span class="mini-title">把一次线上事故拆成可复现的五个步骤</span>
+          <span class="mini-meta">No. 0042 · 技术文章 · 3 天前</span>
+        </a>
+        <a class="mini-item" href="#">
+          <span class="mini-title">学一门新语言时，我先放弃的三件事</span>
+          <span class="mini-meta">No. 0041 · 日常思考 · 5 天前</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="auth-form">
+      <form onsubmit="return false">
+        <label for="login-email">邮箱</label>
+        <input id="login-email" type="email" placeholder="name@example.com" autocomplete="email">
+
+        <label for="login-password">密码</label>
+        <input id="login-password" type="password" placeholder="请输入密码" autocomplete="current-password">
+
+        <button class="btn-primary btn-wide" type="submit">登录</button>
+        <p class="form-foot">还没有账号？<a href="#">注册一个</a></p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 注册 ============ -->
+<section class="screen" id="screen-register">
+  <div class="wrap auth-grid">
+    <div class="auth-editorial">
+      <div class="kicker">账户 / ACCOUNT</div>
+      <h1>加入<br>MyBlog</h1>
+      <p class="dek">注册后即可发布技术文章与日常思考。</p>
+
+      <div class="mini">
+        <div class="mini-head">你可以</div>
+        <a class="mini-item" href="#">
+          <span class="mini-title">写技术文章，把踩过的坑记下来</span>
+          <span class="mini-meta">归入「技术文章」，再选一个分类</span>
+        </a>
+        <a class="mini-item" href="#">
+          <span class="mini-title">写日常思考，留住当时的判断</span>
+          <span class="mini-meta">归入「日常思考」，标签自由填写</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="auth-form">
+      <form onsubmit="return false">
+        <label for="reg-username">用户名</label>
+        <input id="reg-username" type="text" placeholder="3–30 个字符" autocomplete="username">
+        <p class="field-hint">用户名注册后不可修改，请一次想好。</p>
+
+        <label for="reg-email">邮箱</label>
+        <input id="reg-email" type="email" placeholder="name@example.com" autocomplete="email">
+
+        <label for="reg-password">密码</label>
+        <input id="reg-password" type="password" placeholder="至少 8 位，含字母和数字" autocomplete="new-password">
+
+        <button class="btn-primary btn-wide" type="submit">创建账号</button>
+        <p class="form-foot">已经有账号？<a href="#">直接登录</a></p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<footer class="site-foot wrap">
+  <span>MyBlog · 多用户博客平台</span>
+  <span>第 001 期</span>
+</footer>
+
+<script>
+  const screenButtons = Array.from(document.querySelectorAll('[data-screen]'));
+  const screens = Array.from(document.querySelectorAll('.screen'));
+  const readingRule = document.getElementById('readingRule');
+  const readingFill = document.getElementById('readingFill');
+  const readingPercent = document.getElementById('readingPercent');
+
+  function syncReadingRule() {
+    const active = document.querySelector('.screen.is-active');
+    const isArticle = Boolean(active) && active.id === 'screen-article';
+    readingRule.classList.toggle('is-on', isArticle);
+    if (!isArticle) return;
+
+    const rect = active.getBoundingClientRect();
+    const total = rect.height - window.innerHeight;
+    const progress = total > 0 ? Math.min(1, Math.max(0, -rect.top / total)) : 0;
+
+    readingFill.style.height = (progress * 100).toFixed(1) + '%';
+    readingPercent.textContent = String(Math.round(progress * 100)).padStart(2, '0');
+  }
+
+  screenButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      screenButtons.forEach((item) => item.classList.toggle('is-active', item === button));
+      screens.forEach((screen) => {
+        screen.classList.toggle('is-active', screen.id === 'screen-' + button.dataset.screen);
+      });
+      window.scrollTo({ top: 0 });
+      syncReadingRule();
+    });
+  });
+
+  window.addEventListener('scroll', syncReadingRule, { passive: true });
+  window.addEventListener('resize', syncReadingRule);
+  syncReadingRule();
+</script>
+
+</body>
+</html>

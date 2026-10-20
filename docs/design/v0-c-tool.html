@@ -1,0 +1,542 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MyBlog · 方向 C · 工作台 v0</title>
+<style>
+  :root {
+    --ground: #08090A;
+    --surface-1: #101114;
+    --surface-2: #16171C;
+    --surface-3: #1E1F25;
+    --surface-4: #26272E;
+    --hairline: rgba(255, 255, 255, 0.06);
+    --hairline-strong: rgba(255, 255, 255, 0.1);
+    --text: #F7F8F8;
+    --text-2: #9CA3AF;
+    --text-3: #6B7280;
+    --accent: #5E6AD2;
+    --accent-soft: #A5ADF0;
+    --accent-wash: rgba(94, 106, 210, 0.14);
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    --mono: "JetBrains Mono", "Cascadia Mono", Consolas, "Courier New", monospace;
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--ground);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    text-wrap: pretty;
+  }
+  a { color: inherit; text-decoration: none; }
+  button, input { font-family: inherit; }
+
+  /* ---------- v0 审稿条：不属于设计 ---------- */
+  .v0bar {
+    position: sticky;
+    top: 0;
+    z-index: 60;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: #14151A;
+    border-bottom: 1px solid var(--hairline);
+    font-size: 11px;
+    color: var(--text-3);
+    letter-spacing: 0.06em;
+  }
+  .v0tag { font-family: var(--mono); color: var(--text-2); margin-right: 10px; }
+  .v0bar button {
+    background: transparent;
+    border: 1px solid var(--hairline-strong);
+    color: var(--text-2);
+    padding: 3px 10px;
+    border-radius: var(--radius-sm);
+    font-size: 11px;
+    cursor: pointer;
+  }
+  .v0bar button.is-active { background: var(--surface-3); color: var(--text); border-color: transparent; }
+  .v0note { margin-left: auto; }
+
+  /* ---------- 顶部导航 ---------- */
+  .site-header {
+    position: sticky;
+    top: 33px;
+    z-index: 40;
+    background: rgba(8, 9, 10, 0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--hairline);
+  }
+  .header-inner {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 24px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .wordmark {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-right: 18px;
+  }
+  .wordmark-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 2px;
+    background: var(--accent);
+  }
+  .nav { display: flex; gap: 2px; }
+  .nav a {
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    color: var(--text-2);
+    transition: background 140ms ease, color 140ms ease;
+  }
+  .nav a:hover { background: var(--surface-2); color: var(--text); }
+  .nav a.is-current { background: var(--surface-3); color: var(--text); }
+  .header-actions { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+  .search-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 30px;
+    padding: 0 10px;
+    border: 1px solid var(--hairline-strong);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-3);
+    font-size: 12px;
+    cursor: pointer;
+    transition: border-color 140ms ease, color 140ms ease;
+  }
+  .search-chip:hover { border-color: rgba(255, 255, 255, 0.18); color: var(--text-2); }
+  .search-chip kbd {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-3);
+    border: 1px solid var(--hairline-strong);
+    border-radius: 3px;
+    padding: 1px 4px;
+  }
+  .btn-ghost {
+    height: 30px;
+    padding: 0 12px;
+    display: inline-flex;
+    align-items: center;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    color: var(--text-2);
+    transition: background 140ms ease, color 140ms ease;
+  }
+  .btn-ghost:hover { background: var(--surface-2); color: var(--text); }
+  .btn-accent {
+    height: 30px;
+    padding: 0 14px;
+    display: inline-flex;
+    align-items: center;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: var(--accent);
+    color: #FFFFFF;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 140ms ease;
+  }
+  .btn-accent:hover { background: #6E79DB; }
+
+  .screen { display: none; }
+  .screen.is-active { display: block; }
+
+  /* ---------- 首页 ---------- */
+  .shell { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+  .page-head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 34px 0 18px;
+  }
+  .page-head h1 {
+    margin: 0;
+    font-size: 19px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .count {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-3);
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: var(--surface-2);
+  }
+  .segmented {
+    margin-left: auto;
+    display: flex;
+    gap: 2px;
+    padding: 3px;
+    background: var(--surface-1);
+    border: 1px solid var(--hairline);
+    border-radius: 8px;
+  }
+  .segmented button {
+    border: 0;
+    background: transparent;
+    color: var(--text-3);
+    font-size: 12px;
+    padding: 4px 11px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+  }
+  .segmented button.is-active { background: var(--surface-3); color: var(--text); }
+
+  .list { border-top: 1px solid var(--hairline); }
+  .row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 18px;
+    align-items: center;
+    padding: 15px 12px;
+    border-bottom: 1px solid var(--hairline);
+    border-radius: 8px;
+    transition: background 140ms ease;
+  }
+  .row:hover { background: var(--surface-2); }
+  .row-title {
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: -0.005em;
+    margin: 0 0 7px;
+  }
+  .row:hover .row-title { color: #FFFFFF; }
+  .row-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    color: var(--text-3);
+  }
+  .pill {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--surface-3);
+    color: var(--text-2);
+  }
+  .pill-accent { background: var(--accent-wash); color: var(--accent-soft); }
+  .dot { width: 3px; height: 3px; border-radius: 50%; background: var(--text-3); }
+  .row-stats {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-3);
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .pager {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 22px 0 90px;
+    font-size: 12px;
+    color: var(--text-3);
+  }
+  .pager button {
+    background: var(--surface-1);
+    border: 1px solid var(--hairline);
+    color: var(--text-2);
+    border-radius: var(--radius-sm);
+    padding: 5px 12px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .pager button:hover { background: var(--surface-2); color: var(--text); }
+
+  /* ---------- 认证页 ---------- */
+  .auth-wrap {
+    min-height: calc(100vh - 90px);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 64px 24px 90px;
+    background:
+      radial-gradient(700px 240px at 50% -40px, rgba(94, 106, 210, 0.10), transparent 70%);
+  }
+  .card {
+    width: 100%;
+    max-width: 384px;
+    background: var(--surface-2);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  }
+  .card-head { margin-bottom: 24px; }
+  .card-head h1 {
+    margin: 0 0 6px;
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .card-head p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-2);
+  }
+  .field { margin-bottom: 16px; }
+  .field label {
+    display: block;
+    margin-bottom: 7px;
+    font-size: 12px;
+    color: var(--text-2);
+  }
+  .field input {
+    width: 100%;
+    height: 36px;
+    padding: 0 11px;
+    background: var(--ground);
+    border: 1px solid var(--hairline-strong);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-size: 13px;
+    outline: none;
+    transition: border-color 140ms ease, box-shadow 140ms ease;
+  }
+  .field input::placeholder { color: var(--text-3); }
+  .field input:focus {
+    border-color: rgba(94, 106, 210, 0.75);
+    box-shadow: 0 0 0 3px rgba(94, 106, 210, 0.18);
+  }
+  .field-note {
+    margin: 7px 0 0;
+    font-size: 11px;
+    color: var(--text-3);
+  }
+  .btn-block {
+    width: 100%;
+    height: 36px;
+    margin-top: 8px;
+    justify-content: center;
+    font-size: 13px;
+  }
+  .card-foot {
+    margin: 18px 0 0;
+    font-size: 12px;
+    color: var(--text-3);
+    text-align: center;
+  }
+  .card-foot a { color: var(--accent-soft); }
+  .card-foot a:hover { color: #BFC6F5; }
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 20px 0 0;
+    font-size: 11px;
+    color: var(--text-3);
+  }
+  .divider::before,
+  .divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--hairline);
+  }
+
+  @media (max-width: 760px) {
+    .nav { display: none; }
+    .row { grid-template-columns: 1fr; gap: 8px; }
+    .row-stats { text-align: left; }
+    .segmented { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="v0bar">
+  <span class="v0tag">v0 · 方向 C · 工作台</span>
+  <button data-screen="home" class="is-active">首页</button>
+  <button data-screen="login">登录</button>
+  <button data-screen="register">注册</button>
+  <span class="v0note">占位内容，仅用于确认视觉方向</span>
+</div>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a class="wordmark" href="#"><span class="wordmark-dot"></span>MyBlog</a>
+    <nav class="nav">
+      <a href="#" class="is-current">首页</a>
+      <a href="#">技术文章</a>
+      <a href="#">日常思考</a>
+    </nav>
+    <div class="header-actions">
+      <button class="search-chip" type="button">搜索 <kbd>⌘K</kbd></button>
+      <a class="btn-ghost" href="#">登录</a>
+      <a class="btn-accent" href="#">注册</a>
+    </div>
+  </div>
+</header>
+
+<!-- ============ 首页 ============ -->
+<section class="screen is-active" id="screen-home">
+  <div class="shell">
+    <div class="page-head">
+      <h1>全部文章</h1>
+      <span class="count">128</span>
+      <div class="segmented">
+        <button class="is-active" type="button">最新</button>
+        <button type="button">技术</button>
+        <button type="button">日常</button>
+      </div>
+    </div>
+
+    <div class="list">
+      <div class="row">
+        <div>
+          <p class="row-title">把一次线上事故拆成可复现的五个步骤</p>
+          <div class="row-meta">
+            <span class="pill pill-accent">技术文章</span>
+            <span>工程实践</span>
+            <span class="dot"></span>
+            <span>作者名</span>
+            <span class="dot"></span>
+            <span>2026.10.20</span>
+          </div>
+        </div>
+        <div class="row-stats">1,204 views</div>
+      </div>
+
+      <div class="row">
+        <div>
+          <p class="row-title">学一门新语言时，我先放弃的三件事</p>
+          <div class="row-meta">
+            <span class="pill">日常思考</span>
+            <span>学习记录</span>
+            <span class="dot"></span>
+            <span>作者名</span>
+            <span class="dot"></span>
+            <span>2026.10.18</span>
+          </div>
+        </div>
+        <div class="row-stats">486 views</div>
+      </div>
+
+      <div class="row">
+        <div>
+          <p class="row-title">为什么外键约束比代码里的 if 判断更可靠</p>
+          <div class="row-meta">
+            <span class="pill pill-accent">技术文章</span>
+            <span>数据库</span>
+            <span class="dot"></span>
+            <span>作者名</span>
+            <span class="dot"></span>
+            <span>2026.10.16</span>
+          </div>
+        </div>
+        <div class="row-stats">923 views</div>
+      </div>
+    </div>
+
+    <div class="pager">
+      <button type="button">上一页</button>
+      <span>第 1 页 / 共 3 页</span>
+      <button type="button">下一页</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 登录 ============ -->
+<section class="screen" id="screen-login">
+  <div class="auth-wrap">
+    <div class="card">
+      <div class="card-head">
+        <h1>登录</h1>
+        <p>回到你的写作台，继续未完成的草稿。</p>
+      </div>
+
+      <form onsubmit="return false">
+        <div class="field">
+          <label for="login-email">邮箱</label>
+          <input id="login-email" type="email" placeholder="name@example.com" autocomplete="email">
+        </div>
+        <div class="field">
+          <label for="login-password">密码</label>
+          <input id="login-password" type="password" placeholder="请输入密码" autocomplete="current-password">
+        </div>
+        <button class="btn-accent btn-block" type="submit">登录</button>
+      </form>
+
+      <p class="card-foot">还没有账号？<a href="#">注册一个</a></p>
+      <div class="divider">或</div>
+      <p class="card-foot" style="margin-top:14px">忘记密码功能第一版不提供</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 注册 ============ -->
+<section class="screen" id="screen-register">
+  <div class="auth-wrap">
+    <div class="card">
+      <div class="card-head">
+        <h1>创建账号</h1>
+        <p>注册后即可发布技术文章与日常思考。</p>
+      </div>
+
+      <form onsubmit="return false">
+        <div class="field">
+          <label for="reg-username">用户名</label>
+          <input id="reg-username" type="text" placeholder="3–30 个字符" autocomplete="username">
+          <p class="field-note">注册后不可修改</p>
+        </div>
+        <div class="field">
+          <label for="reg-email">邮箱</label>
+          <input id="reg-email" type="email" placeholder="name@example.com" autocomplete="email">
+          <p class="field-note">不会对其他用户公开</p>
+        </div>
+        <div class="field">
+          <label for="reg-password">密码</label>
+          <input id="reg-password" type="password" placeholder="至少 8 位，含字母和数字" autocomplete="new-password">
+        </div>
+        <button class="btn-accent btn-block" type="submit">创建账号</button>
+      </form>
+
+      <p class="card-foot">已经有账号？<a href="#">直接登录</a></p>
+    </div>
+  </div>
+</section>
+
+<script>
+  const screenButtons = Array.from(document.querySelectorAll('[data-screen]'));
+  const screens = Array.from(document.querySelectorAll('.screen'));
+
+  screenButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      screenButtons.forEach((item) => item.classList.toggle('is-active', item === button));
+      screens.forEach((screen) => {
+        screen.classList.toggle('is-active', screen.id === 'screen-' + button.dataset.screen);
+      });
+      window.scrollTo({ top: 0 });
+    });
+  });
+</script>
+
+</body>
+</html>

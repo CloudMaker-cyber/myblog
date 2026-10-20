@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MyBlog · 方向 A · 三个候选创新点</title>
+<style>
+  :root {
+    --ground: #F2EFE7;
+    --ground-2: #ECE7DA;
+    --ink: #1A1A1A;
+    --ink-2: #4A4638;
+    --muted: #736D5A;
+    --red: #C7322E;
+    --olive: #5E6347;
+    --rule: #C8C2B0;
+    --serif: "Source Han Serif SC", "Noto Serif SC", "Songti SC", SimSun, "Times New Roman", serif;
+    --sans: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+    --mono: "JetBrains Mono", "Cascadia Mono", Consolas, "Courier New", monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+    text-wrap: pretty;
+  }
+  a { color: inherit; text-decoration: none; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 40px; }
+
+  .v0bar {
+    position: sticky; top: 0; z-index: 60;
+    display: flex; align-items: center; gap: 14px;
+    padding: 9px 18px; background: #14120F; color: #B8B09A;
+    font-size: 11px; letter-spacing: 0.1em; border-bottom: 1px solid #2A261F;
+  }
+  .v0bar b { color: #E6DFCB; font-weight: 600; }
+  .v0bar span:last-child { margin-left: auto; color: #6E6757; letter-spacing: 0.06em; }
+
+  .page-head { padding: 44px 0 10px; border-bottom: 1px solid var(--ink); }
+  .page-head h1 {
+    margin: 0 0 10px; font-family: var(--serif);
+    font-size: 34px; font-weight: 600; line-height: 1.3;
+  }
+  .page-head p { margin: 0 0 20px; max-width: 46em; color: var(--olive); font-family: var(--serif); font-size: 15px; line-height: 1.9; }
+
+  .concept { padding: 46px 0 40px; border-bottom: 1px solid var(--rule); }
+  .concept-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 8px; }
+  .cnum { font-family: var(--mono); font-size: 12px; color: var(--red); letter-spacing: 0.1em; }
+  .concept-head h2 { margin: 0; font-family: var(--serif); font-size: 24px; font-weight: 600; }
+  .ctag {
+    font-size: 10px; letter-spacing: 0.16em; color: var(--muted);
+    border: 1px solid var(--rule); padding: 2px 8px;
+  }
+  .cdesc { margin: 0 0 22px; max-width: 52em; color: var(--ink-2); font-size: 14px; line-height: 1.9; }
+
+  .demo { border: 1px solid var(--rule); background: var(--ground); padding: 26px; }
+
+  .cost { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin: 20px 0 0; }
+  .cost div { border-top: 1px solid var(--rule); padding-top: 10px; }
+  .cost dt { margin: 0 0 4px; font-size: 10px; letter-spacing: 0.16em; color: var(--red); }
+  .cost dd { margin: 0; font-size: 12.5px; line-height: 1.8; color: var(--ink-2); }
+
+  /* ---------- 01 继续阅读 ---------- */
+  .resume {
+    display: grid;
+    grid-template-columns: auto 1fr auto auto;
+    align-items: center;
+    gap: 18px;
+    padding: 14px 20px;
+    background: var(--ground-2);
+    border-left: 3px solid var(--red);
+  }
+  .resume-kicker { font-size: 10px; letter-spacing: 0.18em; color: var(--red); white-space: nowrap; }
+  .resume-title { font-family: var(--serif); font-size: 17px; }
+  .resume-meta { font-family: var(--mono); font-size: 11px; color: var(--muted); white-space: nowrap; }
+  .resume-bar { grid-column: 2 / 4; height: 1px; background: var(--rule); position: relative; margin-top: 6px; }
+  .resume-bar i { position: absolute; inset: 0 auto 0 0; width: 62%; background: var(--red); }
+  .resume-link { font-size: 11px; letter-spacing: 0.14em; border-bottom: 1px solid var(--ink); padding-bottom: 2px; white-space: nowrap; }
+
+  /* ---------- 02 两种版面 ---------- */
+  .two-forms { display: grid; grid-template-columns: 1.15fr 1fr; gap: 0; }
+  .form-col { padding: 0 30px; border-left: 1px solid var(--rule); }
+  .form-col:first-child { border-left: 0; padding-left: 0; }
+  .form-col:last-child { padding-right: 0; }
+  .form-label { font-size: 10px; letter-spacing: 0.2em; color: var(--muted); margin-bottom: 14px; }
+  .form-title { margin: 0 0 8px; font-family: var(--serif); font-size: 21px; font-weight: 600; line-height: 1.4; }
+  .form-meta { font-size: 10px; letter-spacing: 0.12em; color: var(--muted); margin-bottom: 16px; }
+
+  .tech-body { column-count: 2; column-gap: 22px; column-rule: 1px solid var(--rule); font-family: var(--serif); font-size: 13px; line-height: 1.85; color: #2A2820; }
+  .tech-body p { margin: 0 0 10px; }
+  .tech-body pre { margin: 10px 0; padding: 8px; background: var(--ground-2); font-family: var(--mono); font-size: 10.5px; line-height: 1.6; break-inside: avoid; }
+  .tech-note { margin-top: 12px; border-top: 1px solid var(--ink); padding-top: 8px; font-size: 12px; color: var(--ink-2); }
+
+  .life-body { max-width: 26em; font-family: var(--serif); font-size: 14px; line-height: 2.05; color: #2A2820; }
+  .life-body p { margin: 0 0 14px; }
+  .life-signoff { margin-top: 18px; font-size: 10px; letter-spacing: 0.14em; color: var(--muted); }
+
+  /* ---------- 03 索引 ---------- */
+  .index-grid { column-count: 3; column-gap: 34px; }
+  .index-group { break-inside: avoid; margin-bottom: 18px; }
+  .index-letter {
+    display: block; font-family: var(--serif); font-size: 13px; font-weight: 700;
+    letter-spacing: 0.14em; border-bottom: 1px solid var(--ink); padding-bottom: 5px; margin-bottom: 7px;
+  }
+  .index-item { display: flex; justify-content: space-between; gap: 10px; padding: 3px 0; font-size: 12.5px; }
+  .index-item:hover { color: var(--red); }
+  .index-item b { font-family: var(--mono); font-size: 10px; font-weight: 400; color: var(--muted); }
+
+  .foot { padding: 30px 0 60px; font-size: 11px; letter-spacing: 0.12em; color: var(--muted); display: flex; justify-content: space-between; border-top: 1px solid var(--rule); }
+
+  @media (max-width: 900px) {
+    .wrap { padding: 0 22px; }
+    .two-forms { grid-template-columns: 1fr; }
+    .form-col { border-left: 0; padding: 0 0 28px; }
+    .tech-body { column-count: 1; }
+    .index-grid { column-count: 2; }
+    .cost { grid-template-columns: 1fr; }
+    .resume { grid-template-columns: 1fr; gap: 6px; }
+    .resume-bar { grid-column: 1; }
+  }
+</style>
+</head>
+<body>
+
+<div class="v0bar">
+  <b>方向 A · 三个候选创新点</b>
+  <span>往下滚，每块都标了机制 / 代价 / 风险</span>
+  <span>占位内容</span>
+</div>
+
+<div class="wrap">
+  <div class="page-head">
+    <h1>除了配色和排版，还能靠什么让人记住</h1>
+    <p>你上一轮否掉的是「刊物」这个概念。这一版换三个方向，性质不同：一个是交互（继续阅读），一个是结构（两种版面），一个是导航（索引）。三者可以单独存在，最多叠加两个。</p>
+  </div>
+
+  <!-- ================= 01 ================= -->
+  <section class="concept">
+    <div class="concept-head">
+      <span class="cnum">01</span>
+      <h2>继续阅读</h2>
+      <span class="ctag">交互</span>
+    </div>
+    <p class="cdesc">把「读到哪里」当成一等公民。读者离开再回来，首页顶部直接给出上次读到的那篇和百分比，点一下回到原位。绝大多数博客没有这个，因为它们的默认假设是「文章很短、一次读完」。</p>
+
+    <div class="demo">
+      <div class="resume">
+        <span class="resume-kicker">继续阅读</span>
+        <span class="resume-title">为什么外键约束比代码里的 if 判断更可靠</span>
+        <span class="resume-meta">62%</span>
+        <a class="resume-link" href="#">接着读</a>
+        <div class="resume-bar"><i></i></div>
+      </div>
+    </div>
+
+    <dl class="cost">
+      <div><dt>机制</dt><dd>详情页滚动时把进度写进 localStorage（键 = 文章 id），首页读取最近一条。</dd></div>
+      <div><dt>代价</dt><dd>纯前端，约 30 行代码。不需要改数据库，也不需要登录。</dd></div>
+      <div><dt>风险</dt><dd>换浏览器或清缓存就没了。要跨设备就得做「阅读记录表」，第一版不值得。</dd></div>
+    </dl>
+  </section>
+
+  <!-- ================= 02 ================= -->
+  <section class="concept">
+    <div class="concept-head">
+      <span class="cnum">02</span>
+      <h2>两种文章，两种版面</h2>
+      <span class="ctag">结构</span>
+    </div>
+    <p class="cdesc">PRD 里文章类型只有两种，而现在几乎所有平台都用一个标签把它糊弄过去。这里反过来做：类型决定版面——技术文章宽版心、双栏、代码块有独立样式；日常思考窄版心、大行距、小标题都不给。读者不用看标签，从「形状」就能认出这是什么文章。</p>
+
+    <div class="demo">
+      <div class="two-forms">
+        <div class="form-col">
+          <div class="form-label">技术文章 · 宽版心双栏</div>
+          <h3 class="form-title">为什么外键约束比代码里的 if 判断更可靠</h3>
+          <div class="form-meta">No. 0042 · 工程实践 · 约 8 分钟</div>
+          <div class="tech-body">
+            <p>代码里的判断只能守住「经过这段代码」的写操作。任何一次手工 SQL、一次数据修复脚本，都会绕过它，而数据库的外键不会。</p>
+            <p>把规则放进数据库，等于让最后一道闸门自己去执行，而不是依赖每个调用方记得检查。</p>
+            <pre>CONSTRAINT fk_articles_category
+  FOREIGN KEY (category_id)
+  REFERENCES categories (id)
+  ON DELETE RESTRICT</pre>
+            <p>代价是报错来得更硬：数据库只告诉你「不能删」，不会告诉用户「因为这个分类下还有 3 篇文章」。所以后端要把 1451 翻译成人话。</p>
+            <p>这也是分层的意思：数据库保证正确，代码负责解释。</p>
+          </div>
+          <div class="tech-note">结论：能交给约束的，不要交给判断。</div>
+        </div>
+
+        <div class="form-col">
+          <div class="form-label">日常思考 · 窄版心单栏</div>
+          <h3 class="form-title">学一门新语言时，我先放弃的三件事</h3>
+          <div class="form-meta">No. 0041 · 学习记录 · 约 4 分钟</div>
+          <div class="life-body">
+            <p>第一件是「先把语法看完」。语法书像地图，看得再熟也不代表走过那条路。我改成直接写一个能跑的小东西，缺什么查什么。</p>
+            <p>第二件是「做得漂亮」。第一个版本只需要正确，漂亮是第二遍的事，而第二遍往往来得比想象中快。</p>
+            <p>第三件是「记住所有细节」。记不住的细节本来就不该记，它们应该被查得到。</p>
+          </div>
+          <div class="life-signoff">写于 2026 年 10 月 18 日 · 晚</div>
+        </div>
+      </div>
+    </div>
+
+    <dl class="cost">
+      <div><dt>机制</dt><dd>详情页按 <code>type</code> 切两套排版规则，共用同一套颜色与字体 token。</dd></div>
+      <div><dt>代价</dt><dd>多写一套正文样式（约 60 行 CSS），Markdown 渲染器只换 class 前缀。</dd></div>
+      <div><dt>风险</dt><dd>日常思考类如果也爱用小标题和代码，窄版心会显得挤。需要在写作页给出提示。</dd></div>
+    </dl>
+  </section>
+
+  <!-- ================= 03 ================= -->
+  <section class="concept">
+    <div class="concept-head">
+      <span class="cnum">03</span>
+      <h2>把标签做成书的索引</h2>
+      <span class="ctag">导航</span>
+    </div>
+    <p class="cdesc">现在的博客里，标签基本是死的：点进去是一堆零散文章，没人用。书末的索引是另一种做法——按字母密集排列，每个条目后面跟页码。这里把「页码」换成文章数，标签就从装饰变成了真正的导航。</p>
+
+    <div class="demo">
+      <div class="index-grid">
+        <div class="index-group">
+          <span class="index-letter">H</span>
+          <a class="index-item" href="#">缓存 <b>4</b></a>
+          <a class="index-item" href="#">回归测试 <b>2</b></a>
+          <a class="index-item" href="#">环境配置 <b>6</b></a>
+        </div>
+        <div class="index-group">
+          <span class="index-letter">J</span>
+          <a class="index-item" href="#">架构 <b>12</b></a>
+          <a class="index-item" href="#">检索 <b>3</b></a>
+          <a class="index-item" href="#">交互 <b>5</b></a>
+        </div>
+        <div class="index-group">
+          <span class="index-letter">S</span>
+          <a class="index-item" href="#">数据库 <b>9</b></a>
+          <a class="index-item" href="#">算法 <b>4</b></a>
+          <a class="index-item" href="#">设计系统 <b>7</b></a>
+        </div>
+        <div class="index-group">
+          <span class="index-letter">X</span>
+          <a class="index-item" href="#">性能 <b>8</b></a>
+          <a class="index-item" href="#">写作 <b>11</b></a>
+        </div>
+        <div class="index-group">
+          <span class="index-letter">Z</span>
+          <a class="index-item" href="#">权限 <b>3</b></a>
+          <a class="index-item" href="#">状态管理 <b>5</b></a>
+        </div>
+      </div>
+    </div>
+
+    <dl class="cost">
+      <div><dt>机制</dt><dd>一个索引页，按标签首字母分组；需要按标签聚合文章数的接口。</dd></div>
+      <div><dt>代价</dt><dd>后端一条 GROUP BY 查询，前端一个分组组件。第一版就能做。</dd></div>
+      <div><dt>风险</dt><dd>标签是作者自由填的，会冒出同义词（「缓存」和「缓存设计」）。不做归一化的话索引会显得乱。</dd></div>
+    </dl>
+  </section>
+
+  <div class="foot">
+    <span>MyBlog · 方向 A · 候选创新点</span>
+    <span>占位内容，仅用于确认概念</span>
+  </div>
+</div>
+
+</body>
+</html>
