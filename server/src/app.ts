@@ -3,6 +3,7 @@ import helmet from 'helmet';
 
 import { pool } from './db.js';
 import { errorHandler, notFound } from './middleware/error.js';
+import { adminRouter } from './modules/admin/admin.routes.js';
 import { articleRouter } from './modules/article/article.routes.js';
 import { categoryRouter } from './modules/category/category.routes.js';
 import { sessionRouter } from './modules/session/session.routes.js';
@@ -36,6 +37,7 @@ export function createApp() {
   app.use('/api/v1/sessions', sessionRouter);
   app.use('/api/v1/categories', categoryRouter);
   app.use('/api/v1/articles', articleRouter);
+  app.use('/api/v1/admin', adminRouter);
 
   // 404 与错误处理必须挂在所有路由之后
   app.use(notFound);

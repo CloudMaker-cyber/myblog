@@ -1,7 +1,9 @@
 import { Route, Routes } from 'react-router-dom';
 
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { RequireAdmin } from './components/RequireAdmin';
 import { SiteLayout } from './components/layout/SiteLayout';
+import { AdminPage } from './pages/AdminPage';
 import { ArticleDetailPage } from './pages/ArticleDetailPage';
 import { ArticleListPage } from './pages/ArticleListPage';
 import { AuthorPage } from './pages/AuthorPage';
@@ -22,6 +24,14 @@ export default function App() {
         <Route path="life" element={<ArticleListPage title="日常思考" type="life" />} />
         <Route path="articles/:id" element={<ArticleDetailPage />} />
         <Route path="users/:id" element={<AuthorPage />} />
+        <Route
+          path="admin"
+          element={
+            <RequireAdmin>
+              <AdminPage />
+            </RequireAdmin>
+          }
+        />
         <Route path="login" element={<LoginPage />} />
         <Route path="register" element={<RegisterPage />} />
 

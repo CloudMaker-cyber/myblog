@@ -36,6 +36,7 @@ export function SiteLayout() {
               <>
                 <NavLink to="/write">写文章</NavLink>
                 <NavLink to="/me/articles">我的文章</NavLink>
+                {user.role === 'admin' && <NavLink to="/admin">管理</NavLink>}
               </>
             )}
           </nav>

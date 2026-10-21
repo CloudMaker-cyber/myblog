@@ -46,3 +46,10 @@ export const listArticlesQuerySchema = z.object({
 });
 
 export type ListArticlesQuery = z.infer<typeof listArticlesQuerySchema>;
+
+/** 管理员列表：在公开查询的基础上多一个状态过滤（草稿也要能查） */
+export const adminArticlesQuerySchema = listArticlesQuerySchema.extend({
+  status: z.enum(['draft', 'published']).optional(),
+});
+
+export type AdminArticlesQuery = z.infer<typeof adminArticlesQuerySchema>;

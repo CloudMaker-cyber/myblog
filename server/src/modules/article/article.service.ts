@@ -4,12 +4,14 @@ import { tagSimilarity } from '../../lib/tag-similarity.js';
 import type { AuthUser } from '../user/user.types.js';
 import { findCategoryById } from '../category/category.repository.js';
 import {
+  countAllArticles,
   countPublishedArticles,
   countPublishedByTags,
   deleteArticleRow,
   findArticleById,
   incrementViewCount,
   insertArticle,
+  listAllArticles,
   listAllTags,
   listArticlesByAuthor,
   listPublishedArticles,
@@ -232,8 +234,35 @@ export async function listPublicArticles(params: PublicListParams): Promise<Page
   };
 }
 
-/** 作者可以删自己的；管理员可以删任何人的（PRD：删除违规或异常文章） */
-export async function deleteArticle(user: AuthUser, articleId: number): Promise<void> {
+export type AdminListParams = {
+  page: number;
+  pageSize: number;
+  status?: ArticleStatus;
+  type?: ArticleSummary['type'];
+  q?: string;
+};
+
+/** 管理员视角：所有作者、所有状态的文章 */
+export async function listArticlesForAdmin(params: AdminListParams): Promise<PagedArticles> {
+  const filters = { status: params.status, type: params.type, q: params.q };
+
+  const [articles, total] = await Promise.all([
+    listAllArticles(filters, params.page, params.pageSize),
+    countAllArticles(filters),
+  ]);
+
+  return {
+    articles,
+    pagination: {
+      page: params.page,
+      pageSize: params.pageSize,
+      total,
+      totalPages: Math.ceil(total / params.pageSize),
+    },
+  };
+}
+
+/** 作者可以删自己的；管理员可以删任何人的（PRD：删除违规或异常文章） */export async function deleteArticle(user: AuthUser, articleId: number): Promise<void> {
   const existing = await findArticleById(articleId);
   if (!existing) {
     throw new AppError(404, 'ARTICLE_NOT_FOUND', '文章不存在');

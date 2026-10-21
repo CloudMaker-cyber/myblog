@@ -81,6 +81,67 @@ function buildPublishedWhere(filters: ArticleFilters): { clause: string; params:
   return { clause: `WHERE ${conditions.join(' AND ')}`, params };
 }
 
+export type AdminArticleFilters = {
+  status?: ArticleStatus;
+  type?: ArticleSummary['type'];
+  q?: string;
+};
+
+/**
+ * 管理员的文章列表：不过滤状态，草稿也看得到。
+ * 与公开列表分开写，是为了让"公开 = 只读已发布"这条规则不被一个可选参数绕过去。
+ */
+function buildAdminWhere(filters: AdminArticleFilters): { clause: string; params: ExecuteValues[] } {
+  const conditions: string[] = [];
+  const params: ExecuteValues[] = [];
+
+  if (filters.status) {
+    conditions.push('a.status = ?');
+    params.push(filters.status);
+  }
+  if (filters.type) {
+    conditions.push('a.type = ?');
+    params.push(filters.type);
+  }
+  if (filters.q) {
+    conditions.push("a.title LIKE ? ESCAPE '\\\\'");
+    params.push(`%${escapeLike(filters.q)}%`);
+  }
+
+  return {
+    clause: conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '',
+    params,
+  };
+}
+
+export async function listAllArticles(
+  filters: AdminArticleFilters,
+  page: number,
+  pageSize: number,
+): Promise<ArticleSummary[]> {
+  const { clause, params } = buildAdminWhere(filters);
+  const offset = (page - 1) * pageSize;
+
+  const rows = await query<ArticleRow[]>(
+    `SELECT ${ARTICLE_COLUMNS} ${ARTICLE_JOINS} ${clause}
+      ORDER BY a.updated_at DESC, a.id DESC
+      LIMIT ? OFFSET ?`,
+    [...params, pageSize, offset],
+  );
+
+  const tagsByArticle = await loadTagsFor(rows.map((row) => row.id));
+  return rows.map((row) => toSummary(row, tagsByArticle.get(row.id) ?? []));
+}
+
+export async function countAllArticles(filters: AdminArticleFilters): Promise<number> {
+  const { clause, params } = buildAdminWhere(filters);
+  const rows = await query<(RowDataPacket & { total: number })[]>(
+    `SELECT COUNT(*) AS total FROM articles a ${clause}`,
+    params,
+  );
+  return rows[0]?.total ?? 0;
+}
+
 export type TagWeight = { id: number; weight: number };
 
 export async function listAllTags(): Promise<{ id: number; name: string }[]> {

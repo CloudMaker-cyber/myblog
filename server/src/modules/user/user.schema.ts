@@ -47,3 +47,10 @@ export const updateProfileSchema = z.object({
 });
 
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
+
+/** 管理员改用户状态 */
+export const updateUserStatusSchema = z.object({
+  status: z.enum(['active', 'disabled']),
+});
+
+export type UpdateUserStatusInput = z.infer<typeof updateUserStatusSchema>;

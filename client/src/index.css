@@ -1080,6 +1080,93 @@ button {
   color: var(--muted);
 }
 
+/* ---------- 管理后台 ---------- */
+.admin-page {
+  padding: 46px 0 110px;
+}
+
+.admin-head {
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--ink);
+}
+
+.admin-head h1 {
+  margin: 10px 0 0;
+  font-family: var(--serif);
+  font-size: 32px;
+  font-weight: 600;
+}
+
+.admin-form {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  padding: 22px 0 18px;
+}
+
+.admin-form .field-input {
+  max-width: 320px;
+}
+
+.admin-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 24px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.admin-row h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 4px;
+  font-family: var(--serif);
+  font-size: 21px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.admin-row h3 a:hover {
+  color: var(--red-dark);
+}
+
+.admin-meta {
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.admin-actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.admin-self {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+
+.admin-rename {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.admin-rename .field-input {
+  max-width: 280px;
+}
+
+.admin-empty {
+  padding: 30px 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
 /* ---------- 加载占位 ---------- */
 .page-loading {
   padding: 80px 0;
