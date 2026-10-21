@@ -72,6 +72,21 @@
 
 需要认证。成功：`200`，返回 `{ "user": { id, username, email, role, avatar_url, bio, created_at } }`。
 
+### PATCH /api/v1/users/me — 修改头像与简介
+
+需要认证。请求体（两个字段都可单独传）：
+
+```json
+{ "avatarUrl": "https://example.com/a.png", "bio": "一两句话介绍自己" }
+```
+
+| 字段 | 规则 |
+|---|---|
+| avatarUrl | 合法 URL，≤500 字符；传 `null` 或空串表示清空（界面回落成用户名首字母） |
+| bio | ≤300 字符；传 `null` 或空串表示清空 |
+
+只传其中一个字段时，另一个保持不变。成功：`200`，返回更新后的 `{ "user": { ... } }`。
+
 ### GET /api/v1/users/:id — 作者公开资料
 
 不需要认证。成功：`200`，返回 `{ "user": { id, username, avatar_url, bio, created_at } }`，**不含邮箱**。
