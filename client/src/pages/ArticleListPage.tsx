@@ -23,6 +23,7 @@ export function ArticleListPage({ title, type, showResume = false }: ArticleList
   const page = Math.max(1, Number(searchParams.get('page') ?? '1') || 1);
   const categoryParam = searchParams.get('categoryId');
   const q = searchParams.get('q') ?? '';
+  const tag = searchParams.get('tag') ?? '';
   const activeCategoryId = categoryParam ? Number(categoryParam) : null;
 
   const [data, setData] = useState<PagedArticles | null>(null);
@@ -53,6 +54,7 @@ export function ArticleListPage({ title, type, showResume = false }: ArticleList
           type,
           categoryId: activeCategoryId ?? undefined,
           q: q || undefined,
+          tag: tag || undefined,
         });
         if (cancelled) return;
         setData(result);
@@ -67,7 +69,7 @@ export function ArticleListPage({ title, type, showResume = false }: ArticleList
     return () => {
       cancelled = true;
     };
-  }, [page, type, activeCategoryId, q]);
+  }, [page, type, activeCategoryId, q, tag]);
 
   function updateParams(next: Record<string, string | undefined>): void {
     const params = new URLSearchParams(searchParams);
@@ -104,7 +106,13 @@ export function ArticleListPage({ title, type, showResume = false }: ArticleList
 
       <div className="list-head">
         <h2>{title}</h2>
-        <span>{isLoading ? '加载中…' : `共 ${data.pagination.total} 篇`}</span>
+        <span>
+          {isLoading
+            ? '加载中…'
+            : tag
+              ? `按相关度排序 · 共 ${data.pagination.total} 篇`
+              : `共 ${data.pagination.total} 篇`}
+        </span>
 
         <form
           className="search-form"
@@ -151,6 +159,21 @@ export function ArticleListPage({ title, type, showResume = false }: ArticleList
         </div>
       )}
 
+      {tag && (
+        <div className="active-filter">
+          <span>
+            标签 <strong>#{tag}</strong>
+          </span>
+          <button
+            type="button"
+            className="link-quiet"
+            onClick={() => updateParams({ tag: undefined, page: '1' })}
+          >
+            清除筛选
+          </button>
+        </div>
+      )}
+
       {error && (
         <p className="form-error" role="alert">
           {error}
@@ -159,9 +182,15 @@ export function ArticleListPage({ title, type, showResume = false }: ArticleList
 
       {!isLoading && data.articles.length === 0 && (
         <div className="empty-state">
-          <p className="empty-title">{q ? '没有匹配的文章' : '还没有文章'}</p>
+          <p className="empty-title">
+            {tag ? `没有带「${tag}」标签的文章` : q ? '没有匹配的文章' : '还没有文章'}
+          </p>
           <p className="empty-desc">
-            {q ? '换个关键词试试，搜索只匹配标题。' : '第一篇文章发布后，会按时间倒序出现在这里。'}
+            {tag
+              ? '换个标签，或者回到全部文章看看。'
+              : q
+                ? '换个关键词试试，搜索只匹配标题。'
+                : '第一篇文章发布后，会按时间倒序出现在这里。'}
           </p>
         </div>
       )}

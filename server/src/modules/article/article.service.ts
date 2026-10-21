@@ -1,15 +1,19 @@
 import { AppError } from '../../lib/http-error.js';
 import { withTransaction } from '../../db.js';
+import { tagSimilarity } from '../../lib/tag-similarity.js';
 import type { AuthUser } from '../user/user.types.js';
 import { findCategoryById } from '../category/category.repository.js';
 import {
   countPublishedArticles,
+  countPublishedByTags,
   deleteArticleRow,
   findArticleById,
   incrementViewCount,
   insertArticle,
+  listAllTags,
   listArticlesByAuthor,
   listPublishedArticles,
+  listPublishedByTags,
   replaceArticleTags,
   updateArticleRow,
 } from './article.repository.js';
@@ -172,6 +176,7 @@ export type PublicListParams = {
   categoryId?: number;
   authorId?: number;
   q?: string;
+  tag?: string;
 };
 
 export type PagedArticles = {
@@ -188,10 +193,33 @@ export async function listPublicArticles(params: PublicListParams): Promise<Page
     q: params.q,
   };
 
-  const [articles, total] = await Promise.all([
-    listPublishedArticles(filters, params.page, params.pageSize),
-    countPublishedArticles(filters),
-  ]);
+  let articles: ArticleSummary[] = [];
+  let total = 0;
+
+  if (params.tag) {
+    /**
+     * 标签检索：先算出"每个标签跟目标标签有多像"，再按相关度排序。
+     *
+     * 相似度在 Node 里算，是因为 MySQL 没有字符串相似度函数；
+     * 标签总量很小（几十到几百），一次全取出来算完全够用。
+     */
+    const allTags = await listAllTags();
+    const weights = allTags
+      .map((tag) => ({ id: tag.id, weight: tagSimilarity(params.tag ?? '', tag.name) }))
+      .filter((item) => item.weight > 0);
+
+    if (weights.length > 0) {
+      [articles, total] = await Promise.all([
+        listPublishedByTags(filters, weights, params.page, params.pageSize),
+        countPublishedByTags(filters, weights),
+      ]);
+    }
+  } else {
+    [articles, total] = await Promise.all([
+      listPublishedArticles(filters, params.page, params.pageSize),
+      countPublishedArticles(filters),
+    ]);
+  }
 
   return {
     articles,

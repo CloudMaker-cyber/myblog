@@ -81,6 +81,91 @@ function buildPublishedWhere(filters: ArticleFilters): { clause: string; params:
   return { clause: `WHERE ${conditions.join(' AND ')}`, params };
 }
 
+export type TagWeight = { id: number; weight: number };
+
+export async function listAllTags(): Promise<{ id: number; name: string }[]> {
+  const rows = await query<(RowDataPacket & { id: number; name: string })[]>(
+    'SELECT id, name FROM tags ORDER BY id ASC',
+  );
+  return rows.map((row) => ({ id: row.id, name: row.name }));
+}
+
+/**
+ * 把"标签权重表"拼成一个临时派生表，供 SQL 关联。
+ * 权重由 Node 算好再传进来（MySQL 没有字符串相似度函数），
+ * 但仍然全部走占位符，不把数值拼进 SQL 文本。
+ */
+function buildWeightTable(weights: TagWeight[]): { sql: string; params: ExecuteValues[] } {
+  const selects: string[] = [];
+  const params: ExecuteValues[] = [];
+
+  weights.forEach((item, index) => {
+    selects.push(index === 0 ? 'SELECT ? AS tag_id, ? AS weight' : 'SELECT ?, ?');
+    params.push(item.id, item.weight);
+  });
+
+  return { sql: selects.join(' UNION ALL '), params };
+}
+
+/**
+ * 按标签相关度查文章。
+ *
+ * 每个候选标签有一个权重（1 = 完全相同，0.5~0.9 = 包含关系，更低 = 拼写接近），
+ * 一篇文章的相关度取它命中的候选标签里**最高**的那个权重（MAX，不是求和），
+ * 这样分数始终在 0~1 之间，也便于解释"为什么这篇排在前面"。
+ */
+export async function listPublishedByTags(
+  filters: ArticleFilters,
+  weights: TagWeight[],
+  page: number,
+  pageSize: number,
+): Promise<ArticleSummary[]> {
+  const { clause, params } = buildPublishedWhere(filters);
+  const weightTable = buildWeightTable(weights);
+  const offset = (page - 1) * pageSize;
+
+  const rows = await query<ArticleRow[]>(
+    `SELECT ${ARTICLE_COLUMNS}
+     ${ARTICLE_JOINS}
+     JOIN (
+       SELECT atg.article_id, MAX(m.weight) AS score
+         FROM article_tags atg
+         JOIN (${weightTable.sql}) m ON m.tag_id = atg.tag_id
+        GROUP BY atg.article_id
+     ) s ON s.article_id = a.id
+     ${clause}
+     ORDER BY s.score DESC, a.published_at DESC, a.id DESC
+     LIMIT ? OFFSET ?`,
+    [...weightTable.params, ...params, pageSize, offset],
+  );
+
+  const tagsByArticle = await loadTagsFor(rows.map((row) => row.id));
+  return rows.map((row) => toSummary(row, tagsByArticle.get(row.id) ?? []));
+}
+
+export async function countPublishedByTags(
+  filters: ArticleFilters,
+  weights: TagWeight[],
+): Promise<number> {
+  const { clause, params } = buildPublishedWhere(filters);
+  const weightTable = buildWeightTable(weights);
+
+  const rows = await query<(RowDataPacket & { total: number })[]>(
+    `SELECT COUNT(*) AS total
+       FROM articles a
+       JOIN (
+         SELECT atg.article_id
+           FROM article_tags atg
+           JOIN (${weightTable.sql}) m ON m.tag_id = atg.tag_id
+          GROUP BY atg.article_id
+       ) s ON s.article_id = a.id
+       ${clause}`,
+    [...weightTable.params, ...params],
+  );
+
+  return rows[0]?.total ?? 0;
+}
+
 export async function listPublishedArticles(
   filters: ArticleFilters,
   page: number,

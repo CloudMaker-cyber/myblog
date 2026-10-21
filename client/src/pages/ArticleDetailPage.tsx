@@ -203,7 +203,20 @@ export function ArticleDetailPage() {
             <strong>No. {articleNo(article.id)}</strong>
             <br />
             分类 {article.category.name}
-            {article.tags.length > 0 && ` · 标签 ${article.tags.join(' / ')}`}
+            {article.tags.length > 0 && (
+              <>
+                {' · 标签 '}
+                {article.tags.map((tag) => (
+                  <Link
+                    key={tag}
+                    to={`/?tag=${encodeURIComponent(tag)}`}
+                    className="tag-link tag-link--inline"
+                  >
+                    #{tag}
+                  </Link>
+                ))}
+              </>
+            )}
           </footer>
         </div>
       </article>

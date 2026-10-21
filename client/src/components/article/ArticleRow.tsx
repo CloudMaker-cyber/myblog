@@ -44,12 +44,20 @@ export function ArticleRow({ article }: { article: ArticleSummary }) {
           <Link to={`/articles/${article.id}`}>{article.title}</Link>
         </h3>
         {article.excerpt && <p className="dek">{toPlainExcerpt(article.excerpt)}</p>}
+        {article.tags.length > 0 && (
+          <p className="tag-line">
+            {article.tags.map((tag) => (
+              <Link key={tag} to={`/?tag=${encodeURIComponent(tag)}`} className="tag-link">
+                #{tag}
+              </Link>
+            ))}
+          </p>
+        )}
       </div>
 
       <div className="post-meta">
         <Link to={`/users/${article.author.id}`}>{article.author.username}</Link>
         <span>{article.view_count} 次阅读</span>
-        {article.tags.length > 0 && <span className="mono">{article.tags.slice(0, 2).join(' / ')}</span>}
       </div>
     </article>
   );

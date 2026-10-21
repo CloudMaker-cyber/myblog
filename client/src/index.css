@@ -505,6 +505,46 @@ button {
   font-size: 10px;
 }
 
+/* ---------- 标签 ---------- */
+.tag-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 10px 0 0;
+}
+
+.tag-link {
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid transparent;
+  transition: color 140ms ease, border-color 140ms ease;
+}
+
+.tag-link:hover {
+  color: var(--red);
+  border-bottom-color: var(--red);
+}
+
+.tag-link--inline {
+  margin-right: 8px;
+}
+
+.active-filter {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 0 0;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+
+.active-filter strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
 /* ---------- 搜索与分类筛选 ---------- */
 .search-form {
   display: flex;

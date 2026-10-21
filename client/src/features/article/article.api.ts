@@ -62,6 +62,7 @@ export type ArticleQuery = {
   type?: ArticleType;
   categoryId?: number;
   q?: string;
+  tag?: string;
 };
 
 export type ArticleInput = {
@@ -93,6 +94,7 @@ function toQueryString(query: ArticleQuery): string {
   if (query.type) params.set('type', query.type);
   if (query.categoryId !== undefined) params.set('categoryId', String(query.categoryId));
   if (query.q) params.set('q', query.q);
+  if (query.tag) params.set('tag', query.tag);
 
   const text = params.toString();
   return text ? `?${text}` : '';

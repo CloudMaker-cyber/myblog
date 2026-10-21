@@ -42,6 +42,7 @@ export const listArticlesQuerySchema = z.object({
   type: z.enum(['tech', 'life']).optional(),
   categoryId: z.coerce.number().int().positive().optional(),
   q: z.string().trim().max(100, '搜索词最多 100 个字符').optional(),
+  tag: z.string().trim().min(1, '标签不能为空').max(20, '标签最多 20 个字符').optional(),
 });
 
 export type ListArticlesQuery = z.infer<typeof listArticlesQuerySchema>;
