@@ -10,9 +10,11 @@ type ArticleRow = RowDataPacket & {
   id: number;
   title: string;
   content: string;
+  excerpt: string;
   type: ArticleSummary['type'];
   status: ArticleStatus;
   cover_url: string | null;
+  show_toc: number;
   view_count: number;
   published_at: string | null;
   created_at: string;
@@ -24,7 +26,8 @@ type ArticleRow = RowDataPacket & {
 };
 
 const ARTICLE_COLUMNS = `
-  a.id, a.title, a.content, a.type, a.status, a.cover_url, a.view_count,
+  a.id, a.title, a.content, SUBSTRING(a.content, 1, 180) AS excerpt,
+  a.type, a.status, a.cover_url, a.show_toc, a.view_count,
   a.published_at, a.created_at, a.updated_at,
   a.author_id, u.username AS author_username,
   a.category_id, c.name AS category_name
@@ -42,13 +45,92 @@ async function x(ctx: Ctx, sql: string, params: ExecuteValues[] = []): Promise<R
   return result;
 }
 
+export type ArticleFilters = {
+  type?: ArticleSummary['type'];
+  categoryId?: number;
+  authorId?: number;
+  q?: string;
+};
+
+/** LIKE 里的 % 和 _ 是通配符，用户输入的这两个字符要转义，否则搜 "100%" 会匹配到一切 */
+function escapeLike(value: string): string {
+  return value.replace(/[\\%_]/g, (char) => `\\${char}`);
+}
+
+function buildPublishedWhere(filters: ArticleFilters): { clause: string; params: ExecuteValues[] } {
+  const conditions = ["a.status = 'published'"];
+  const params: ExecuteValues[] = [];
+
+  if (filters.type) {
+    conditions.push('a.type = ?');
+    params.push(filters.type);
+  }
+  if (filters.categoryId !== undefined) {
+    conditions.push('a.category_id = ?');
+    params.push(filters.categoryId);
+  }
+  if (filters.authorId !== undefined) {
+    conditions.push('a.author_id = ?');
+    params.push(filters.authorId);
+  }
+  if (filters.q) {
+    conditions.push("a.title LIKE ? ESCAPE '\\\\'");
+    params.push(`%${escapeLike(filters.q)}%`);
+  }
+
+  return { clause: `WHERE ${conditions.join(' AND ')}`, params };
+}
+
+export async function listPublishedArticles(
+  filters: ArticleFilters,
+  page: number,
+  pageSize: number,
+): Promise<ArticleSummary[]> {
+  const { clause, params } = buildPublishedWhere(filters);
+  const offset = (page - 1) * pageSize;
+
+  const rows = await query<ArticleRow[]>(
+    `SELECT ${ARTICLE_COLUMNS} ${ARTICLE_JOINS} ${clause}
+      ORDER BY a.published_at DESC, a.id DESC
+      LIMIT ? OFFSET ?`,
+    [...params, pageSize, offset],
+  );
+
+  const tagsByArticle = await loadTagsFor(rows.map((row) => row.id));
+  return rows.map((row) => toSummary(row, tagsByArticle.get(row.id) ?? []));
+}
+
+export async function countPublishedArticles(filters: ArticleFilters): Promise<number> {
+  const { clause, params } = buildPublishedWhere(filters);
+  const rows = await query<(RowDataPacket & { total: number })[]>(
+    `SELECT COUNT(*) AS total FROM articles a ${clause}`,
+    params,
+  );
+  return rows[0]?.total ?? 0;
+}
+
+/**
+ * 浏览量 +1。
+ * 必须显式写 `updated_at = updated_at`：该列有 ON UPDATE CURRENT_TIMESTAMP，
+ * 不这么写的话，每有人看一次文章，"更新于"的时间都会被刷新。
+ */
+export async function incrementViewCount(id: number): Promise<void> {
+  await execute(
+    'UPDATE articles SET view_count = view_count + 1, updated_at = updated_at WHERE id = ?',
+    [id],
+  );
+}
+
 function toSummary(row: ArticleRow, tags: string[]): ArticleSummary {
   return {
     id: row.id,
     title: row.title,
+    excerpt: row.excerpt,
     type: row.type,
     status: row.status,
     cover_url: row.cover_url,
+    // TINYINT(1) 取出来是 0/1，转成布尔再交给前端
+    show_toc: Boolean(row.show_toc),
     view_count: row.view_count,
     published_at: row.published_at,
     created_at: row.created_at,
@@ -131,14 +213,15 @@ export async function insertArticle(
     content: string;
     type: ArticleSummary['type'];
     coverUrl: string | null;
+    showToc: boolean;
     status: ArticleStatus;
     publishedAt: string | null;
   },
 ): Promise<number> {
   const result = await x(
     ctx,
-    `INSERT INTO articles (author_id, category_id, title, content, type, cover_url, status, published_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO articles (author_id, category_id, title, content, type, cover_url, show_toc, status, published_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       input.authorId,
       input.categoryId,
@@ -146,6 +229,7 @@ export async function insertArticle(
       input.content,
       input.type,
       input.coverUrl,
+      input.showToc,
       input.status,
       input.publishedAt,
     ],
@@ -162,6 +246,7 @@ export async function updateArticleRow(
     type: ArticleSummary['type'];
     categoryId: number;
     coverUrl: string | null;
+    showToc: boolean;
     status: ArticleStatus;
     publishedAt: string | null;
   },
@@ -169,7 +254,7 @@ export async function updateArticleRow(
   await x(
     ctx,
     `UPDATE articles
-        SET title = ?, content = ?, type = ?, category_id = ?, cover_url = ?, status = ?, published_at = ?
+        SET title = ?, content = ?, type = ?, category_id = ?, cover_url = ?, show_toc = ?, status = ?, published_at = ?
       WHERE id = ?`,
     [
       input.title,
@@ -177,6 +262,7 @@ export async function updateArticleRow(
       input.type,
       input.categoryId,
       input.coverUrl,
+      input.showToc,
       input.status,
       input.publishedAt,
       id,

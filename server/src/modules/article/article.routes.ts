@@ -1,10 +1,11 @@
 import { Router } from 'express';
 
 import { AppError } from '../../lib/http-error.js';
-import { validateBody } from '../../lib/validate.js';
+import { parseQueryParams, validateBody } from '../../lib/validate.js';
 import { optionalAuth, requireAuth } from '../../middleware/auth.js';
 import {
   createArticleSchema,
+  listArticlesQuerySchema,
   updateArticleSchema,
   type CreateArticleInput,
   type UpdateArticleInput,
@@ -14,6 +15,7 @@ import {
   deleteArticle,
   getArticle,
   listMyArticles,
+  listPublicArticles,
   updateArticle,
 } from './article.service.js';
 import type { ArticleStatus } from './article.types.js';
@@ -27,6 +29,13 @@ function parseId(value: unknown): number {
   }
   return id;
 }
+
+/** GET /api/v1/articles —— 公开列表（分页 + 类型 + 分类 + 标题搜索 + 作者） */
+articleRouter.get('/', async (req, res) => {
+  const query = parseQueryParams(listArticlesQuerySchema, req.query);
+  const result = await listPublicArticles(query);
+  res.json(result);
+});
 
 /** POST /api/v1/articles —— 新建文章（草稿或直接发布） */
 articleRouter.post('/', requireAuth, validateBody(createArticleSchema), async (req, res) => {

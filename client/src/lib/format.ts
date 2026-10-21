@@ -13,3 +13,8 @@ export function formatMonthDay(value: string | null): string {
   const parts = date.split('-');
   return parts.length === 3 ? `${parts[1]}.${parts[2]}` : date;
 }
+
+/** 文章编号：id 42 → '0042'。刊物式的编号，比裸 id 更容易被引用 */
+export function articleNo(id: number): string {
+  return String(id).padStart(4, '0');
+}

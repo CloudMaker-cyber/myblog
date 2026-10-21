@@ -25,3 +25,23 @@ export function validateBody<T>(schema: ZodType<T>) {
     next();
   };
 }
+
+/**
+ * 查询参数的校验。
+ *
+ * 不用中间件是因为 Express 5 把 req.query 改成了只读的 getter，
+ * 想"校验后再写回去"会报错。所以直接在路由里取校验结果用。
+ */
+export function parseQueryParams<T>(schema: ZodType<T>, value: unknown): T {
+  const result = schema.safeParse(value);
+
+  if (!result.success) {
+    const details = result.error.issues.map((issue) => ({
+      field: issue.path.join('.') || '(query)',
+      message: issue.message,
+    }));
+    throw new AppError(400, 'VALIDATION_FAILED', '查询参数有误', details);
+  }
+
+  return result.data;
+}

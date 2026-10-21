@@ -30,6 +30,8 @@ export function SiteLayout() {
             <NavLink to="/" end>
               首页
             </NavLink>
+            <NavLink to="/tech">技术文章</NavLink>
+            <NavLink to="/life">日常思考</NavLink>
             {user && (
               <>
                 <NavLink to="/write">写文章</NavLink>

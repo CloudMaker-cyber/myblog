@@ -1,0 +1,56 @@
+import { Link } from 'react-router-dom';
+
+import {
+  ARTICLE_TYPE_LABEL,
+  type ArticleSummary,
+} from '../../features/article/article.api';
+import { articleNo, formatMonthDay } from '../../lib/format';
+
+/** 去掉 Markdown 记号，把正文变成一句能直接显示的导语 */
+function toPlainExcerpt(text: string): string {
+  const plain = text
+    .replace(/```[\s\S]*?```/g, ' ')
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ')
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/[#>*_`~]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  return plain.length > 90 ? `${plain.slice(0, 90)}…` : plain;
+}
+
+function weekdayLabel(value: string): string {
+  const date = new Date(value.replace(' ', 'T'));
+  if (Number.isNaN(date.getTime())) return '';
+  return ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'][date.getDay()] ?? '';
+}
+
+export function ArticleRow({ article }: { article: ArticleSummary }) {
+  const published = article.published_at ?? article.created_at;
+
+  return (
+    <article className="post">
+      <div className="post-date">
+        {formatMonthDay(published)}
+        <small>{weekdayLabel(published)}</small>
+      </div>
+
+      <div className="post-main">
+        <div className="kicker">
+          {ARTICLE_TYPE_LABEL[article.type]} · {article.category.name}
+          <span className="no"> · No. {articleNo(article.id)}</span>
+        </div>
+        <h3>
+          <Link to={`/articles/${article.id}`}>{article.title}</Link>
+        </h3>
+        {article.excerpt && <p className="dek">{toPlainExcerpt(article.excerpt)}</p>}
+      </div>
+
+      <div className="post-meta">
+        <Link to={`/users/${article.author.id}`}>{article.author.username}</Link>
+        <span>{article.view_count} 次阅读</span>
+        {article.tags.length > 0 && <span className="mono">{article.tags.slice(0, 2).join(' / ')}</span>}
+      </div>
+    </article>
+  );
+}

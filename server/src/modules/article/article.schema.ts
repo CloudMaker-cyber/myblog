@@ -16,6 +16,8 @@ const baseArticleSchema = z.object({
   categoryId: z.number().int().positive('请选择一个分类'),
   tags: tagsSchema,
   coverUrl: z.string().trim().max(500).url('封面图必须是合法链接').nullish(),
+  /** 作者可选：是否在详情页顶部显示由正文标题生成的目录 */
+  showToc: z.boolean().default(false),
   status: z.enum(['draft', 'published']),
 });
 
@@ -29,3 +31,17 @@ export type CreateArticleInput = z.infer<typeof createArticleSchema>;
  */
 export const updateArticleSchema = baseArticleSchema.partial();
 export type UpdateArticleInput = z.infer<typeof updateArticleSchema>;
+
+/**
+ * 公开列表的查询参数。z.coerce 负责把字符串转成数字：
+ * 查询串里的一切都是字符串，`page=2` 拿到的是 "2" 而不是 2。
+ */
+export const listArticlesQuerySchema = z.object({
+  page: z.coerce.number().int().min(1, '页码至少为 1').default(1),
+  pageSize: z.coerce.number().int().min(1, '每页至少 1 条').max(50, '每页最多 50 条').default(10),
+  type: z.enum(['tech', 'life']).optional(),
+  categoryId: z.coerce.number().int().positive().optional(),
+  q: z.string().trim().max(100, '搜索词最多 100 个字符').optional(),
+});
+
+export type ListArticlesQuery = z.infer<typeof listArticlesQuerySchema>;

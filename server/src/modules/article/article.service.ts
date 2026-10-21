@@ -3,10 +3,13 @@ import { withTransaction } from '../../db.js';
 import type { AuthUser } from '../user/user.types.js';
 import { findCategoryById } from '../category/category.repository.js';
 import {
+  countPublishedArticles,
   deleteArticleRow,
   findArticleById,
+  incrementViewCount,
   insertArticle,
   listArticlesByAuthor,
+  listPublishedArticles,
   replaceArticleTags,
   updateArticleRow,
 } from './article.repository.js';
@@ -65,6 +68,7 @@ export async function createArticle(
       content: input.content,
       type: input.type,
       coverUrl: input.coverUrl ?? null,
+      showToc: input.showToc,
       status: input.status,
       publishedAt,
     });
@@ -108,6 +112,7 @@ export async function updateArticle(
       type: input.type ?? existing.type,
       categoryId: input.categoryId ?? existing.category.id,
       coverUrl: input.coverUrl === undefined ? existing.cover_url : (input.coverUrl ?? null),
+      showToc: input.showToc ?? existing.show_toc,
       status: nextStatus,
       publishedAt,
     });
@@ -144,6 +149,10 @@ export async function getArticle(
     if (!isOwner && !isAdmin) {
       throw new AppError(404, 'ARTICLE_NOT_FOUND', '文章不存在');
     }
+  } else {
+    // 每次浏览详情 +1（PRD 要求；第一版不做防刷）
+    await incrementViewCount(article.id);
+    article.view_count += 1;
   }
 
   return article;
@@ -154,6 +163,45 @@ export async function listMyArticles(
   status?: ArticleStatus,
 ): Promise<ArticleSummary[]> {
   return listArticlesByAuthor(userId, status);
+}
+
+export type PublicListParams = {
+  page: number;
+  pageSize: number;
+  type?: ArticleSummary['type'];
+  categoryId?: number;
+  authorId?: number;
+  q?: string;
+};
+
+export type PagedArticles = {
+  articles: ArticleSummary[];
+  pagination: { page: number; pageSize: number; total: number; totalPages: number };
+};
+
+/** 公开列表：只返回已发布文章，草稿永远不进这里 */
+export async function listPublicArticles(params: PublicListParams): Promise<PagedArticles> {
+  const filters = {
+    type: params.type,
+    categoryId: params.categoryId,
+    authorId: params.authorId,
+    q: params.q,
+  };
+
+  const [articles, total] = await Promise.all([
+    listPublishedArticles(filters, params.page, params.pageSize),
+    countPublishedArticles(filters),
+  ]);
+
+  return {
+    articles,
+    pagination: {
+      page: params.page,
+      pageSize: params.pageSize,
+      total,
+      totalPages: Math.ceil(total / params.pageSize),
+    },
+  };
 }
 
 /** 作者可以删自己的；管理员可以删任何人的（PRD：删除违规或异常文章） */

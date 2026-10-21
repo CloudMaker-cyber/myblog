@@ -53,6 +53,7 @@ export function WritePage() {
   const [categoryId, setCategoryId] = useState('');
   const [tagsText, setTagsText] = useState('');
   const [coverUrl, setCoverUrl] = useState('');
+  const [showToc, setShowToc] = useState(false);
   const [status, setStatus] = useState<ArticleStatus>('draft');
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
 
@@ -102,6 +103,7 @@ export function WritePage() {
         setCategoryId(String(article.category.id));
         setTagsText(article.tags.join(', '));
         setCoverUrl(article.cover_url ?? '');
+        setShowToc(article.show_toc);
         setStatus(article.status);
         setUpdatedAt(article.updated_at);
       } catch (err) {
@@ -141,6 +143,7 @@ export function WritePage() {
       categoryId: Number(categoryId),
       tags: parseTags(tagsText),
       coverUrl: coverUrl.trim() ? coverUrl.trim() : null,
+      showToc,
       status: nextStatus,
     };
 
@@ -356,11 +359,27 @@ export function WritePage() {
             id="article-cover"
             className="field-input"
             type="url"
-            placeholder="留空则使用默认封面"
+            placeholder="留空则不显示封面"
             value={coverUrl}
             onChange={(event) => setCoverUrl(event.target.value)}
           />
+          <p className="field-hint">
+            填了会显示在标题下方；想把封面放进正文，直接用 Markdown 图片语法。
+          </p>
           {fieldErrors.coverUrl && <p className="field-error">{fieldErrors.coverUrl}</p>}
+        </div>
+
+        <div className="editor-field">
+          <span className="field-label">文章目录</span>
+          <label className="checkbox-row" htmlFor="article-show-toc">
+            <input
+              id="article-show-toc"
+              type="checkbox"
+              checked={showToc}
+              onChange={(event) => setShowToc(event.target.checked)}
+            />
+            <span>在文章开头显示目录（由正文里的 ## 和 ### 标题自动生成）</span>
+          </label>
         </div>
       </div>
 

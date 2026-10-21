@@ -9,9 +9,13 @@ export type ArticleAuthor = {
 export type ArticleSummary = {
   id: number;
   title: string;
+  /** 正文前 180 字，列表页用来做导语；不是完整正文 */
+  excerpt: string;
   type: ArticleType;
   status: ArticleStatus;
   cover_url: string | null;
+  /** 作者是否要求在详情页顶部显示目录 */
+  show_toc: boolean;
   view_count: number;
   published_at: string | null;
   created_at: string;
