@@ -20,7 +20,6 @@ type ArticleListPageProps = {
 
 export function ArticleListPage({ title, type, showResume = false }: ArticleListPageProps) {
   const [searchParams, setSearchParams] = useSearchParams();
-  const page = Math.max(1, Number(searchParams.get('page') ?? '1') || 1);
   const categoryParam = searchParams.get('categoryId');
   const q = searchParams.get('q') ?? '';
   const tag = searchParams.get('tag') ?? '';
@@ -31,6 +30,15 @@ export function ArticleListPage({ title, type, showResume = false }: ArticleList
   const [error, setError] = useState<string | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const resume = showResume ? getResume() : null;
+
+  /**
+   * 依赖用"原始查询串"，而不是解析后的各个值。
+   *
+   * 反例：地址从 `/tech` 变成 `/tech?page=1`，查询串变了，
+   * 但解析出来的 page 一直是 1——如果依赖里只有 page，effect 不会重跑，
+   * 而点击时已经把列表清空了，页面就会永远停在"加载中"。
+   */
+  const queryString = searchParams.toString();
 
   useEffect(() => {
     void (async () => {
@@ -46,15 +54,23 @@ export function ArticleListPage({ title, type, showResume = false }: ArticleList
   useEffect(() => {
     let cancelled = false;
 
+    // 从查询串里重新解析，effect 只依赖 queryString 和 type，
+    // 这样"地址变了但解析值没变"的情况也不会被漏掉。
+    const next = new URLSearchParams(queryString);
+    const nextPage = Math.max(1, Number(next.get('page') ?? '1') || 1);
+    const nextCategory = next.get('categoryId');
+    const nextKeyword = next.get('q') ?? '';
+    const nextTag = next.get('tag') ?? '';
+
     void (async () => {
       try {
         const result = await listPublicArticles({
-          page,
+          page: nextPage,
           pageSize: 10,
           type,
-          categoryId: activeCategoryId ?? undefined,
-          q: q || undefined,
-          tag: tag || undefined,
+          categoryId: nextCategory ? Number(nextCategory) : undefined,
+          q: nextKeyword || undefined,
+          tag: nextTag || undefined,
         });
         if (cancelled) return;
         setData(result);
@@ -69,7 +85,7 @@ export function ArticleListPage({ title, type, showResume = false }: ArticleList
     return () => {
       cancelled = true;
     };
-  }, [page, type, activeCategoryId, q, tag]);
+  }, [queryString, type]);
 
   function updateParams(next: Record<string, string | undefined>): void {
     const params = new URLSearchParams(searchParams);
@@ -81,6 +97,15 @@ export function ArticleListPage({ title, type, showResume = false }: ArticleList
         params.set(key, value);
       }
     }
+
+    /**
+     * 地址没变就什么都不做。
+     *
+     * 比如当前已经是"全部分类"，再点一次「全部分类」：参数没变，
+     * 依赖项也就没变，effect 不会重跑；但如果这里先把 data 清成 null，
+     * 列表就会永远停在"加载中"。所以必须先比较，再决定要不要清空。
+     */
+    if (params.toString() === searchParams.toString()) return;
 
     setSearchParams(params);
     setData(null);
