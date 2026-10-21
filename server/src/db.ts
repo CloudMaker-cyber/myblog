@@ -1,5 +1,5 @@
 import type { ExecuteValues, ResultSetHeader, RowDataPacket } from 'mysql2';
-import { createPool } from 'mysql2/promise';
+import { createPool, type PoolConnection } from 'mysql2/promise';
 
 import { config } from './config.js';
 
@@ -46,4 +46,26 @@ export async function execute(
 ): Promise<ResultSetHeader> {
   const [result] = await pool.execute<ResultSetHeader>(sql, params);
   return result;
+}
+
+/**
+ * 事务封装：把一组写操作放进同一个连接里，要么全成功，要么全回滚。
+ *
+ * 写文章就是典型例子——文章、标签、关联表三处都要写，
+ * 中间任何一步失败都必须撤销，否则会留下"有文章没标签"的半截数据。
+ */
+export async function withTransaction<T>(work: (conn: PoolConnection) => Promise<T>): Promise<T> {
+  const conn = await pool.getConnection();
+
+  try {
+    await conn.beginTransaction();
+    const result = await work(conn);
+    await conn.commit();
+    return result;
+  } catch (error) {
+    await conn.rollback();
+    throw error;
+  } finally {
+    conn.release();
+  }
 }
