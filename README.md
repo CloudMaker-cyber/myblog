@@ -2,6 +2,8 @@
 
 多用户博客平台。第一版范围见 [PRD.md](PRD.md)，技术方案见 [TECH_DESIGN.md](TECH_DESIGN.md)，开发规范见 [AGENTS.md](AGENTS.md)。
 
+接口清单见 [docs/API.md](docs/API.md)，开发进度见 [docs/PROGRESS.md](docs/PROGRESS.md)。
+
 ## 技术栈
 
 - 前端：React + TypeScript + Vite + Tailwind CSS v4（`client/`）
@@ -12,13 +14,14 @@
 
 ```
 client/          前端
-  src/           页面与组件
+  src/           页面、组件与接口封装
   vite.config.ts 开发服务器；/api 请求代理到 3000 端口
 server/          后端
-  src/           服务代码
-  sql/           建表脚本
+  src/           服务代码（按业务模块分目录）
+  sql/           建表与种子数据脚本
   .env           本机真实配置（不入库）
   .env.example   变量清单（可入库）
+docs/            接口文档与开发进度
 ```
 
 ## 首次安装
