@@ -197,3 +197,53 @@
 需要认证。作者可删自己的，管理员可删任何人的。物理删除，关联标签关系级联删除。
 
 成功：`204`。
+
+## 管理（仅管理员）
+
+整个 `/api/v1/admin` 命名空间都要求认证且 `role = admin`：未登录返回 `401`，非管理员返回 `403`。
+
+### GET /api/v1/admin/categories — 分类列表（带文章数）
+
+返回 `{ "categories": [{ "id": 2, "name": "工程实践", "article_count": 8 }] }`。`article_count` 用于在删除前给出有依据的提示。
+
+### POST /api/v1/admin/categories — 新增分类
+
+请求体 `{ "name": "性能优化" }`，1–30 字符且唯一。
+
+成功：`201`。重名返回 `409 CATEGORY_TAKEN`。
+
+### PATCH /api/v1/admin/categories/:id — 重命名
+
+请求体同上。成功：`200`。分类不存在 `404`，重名 `409`。
+
+### DELETE /api/v1/admin/categories/:id — 删除分类
+
+成功：`204`。
+
+分类下还有文章时返回 `409 CATEGORY_IN_USE`，消息里带上文章数量。数据库外键本身是 `RESTRICT`，这一层只是为了把"数据库拒绝"翻译成人话。
+
+### GET /api/v1/admin/articles — 全部文章
+
+| 查询参数 | 说明 | 默认 |
+|---|---|---|
+| page / pageSize | 分页，pageSize 上限 50 | 1 / 10 |
+| status | `draft` / `published` | 不限（草稿也返回） |
+| type | `tech` / `life` | 不限 |
+| q | 标题关键词 | 不限 |
+
+返回结构与公开列表相同，按更新时间倒序。
+
+### GET /api/v1/admin/users — 全部用户
+
+查询参数：`page`、`pageSize`（上限 100，默认 20）。
+
+返回 `{ "users": [{ id, username, email, role, status, created_at, article_count }], "pagination": {...} }`。
+
+### PATCH /api/v1/admin/users/:id/status — 禁用 / 恢复账号
+
+请求体 `{ "status": "disabled" }` 或 `{ "status": "active" }`。
+
+- 成功：`200`，返回更新后的 user。
+- 禁用自己返回 `400 CANNOT_MODIFY_SELF`。
+- 禁用会把该用户的 `token_version + 1`，其已登录的会话立即失效；恢复账号不会让旧 token 复活。
+- 被禁用账号的已发布文章**仍然公开可见**（PRD 要求）。
