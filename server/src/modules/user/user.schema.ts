@@ -36,9 +36,14 @@ export const loginSchema = z.object({
 
 export type LoginInput = z.infer<typeof loginSchema>;
 
+/**
+ * 个人资料：两个字段都可以单独改。
+ * 字段名用 camelCase，与其他接口（coverUrl、showToc）保持一致，
+ * 到 repository 里再映射成数据库的 snake_case 列名。
+ */
 export const updateProfileSchema = z.object({
-  avatar_url: z.url('头像必须是合法的 URL').max(500).nullish(),
-  bio: z.string().max(300, '简介最多 300 个字符').nullish(),
+  avatarUrl: z.url('头像必须是合法的 URL').max(500, '头像链接最多 500 个字符').nullish(),
+  bio: z.string().trim().max(300, '简介最多 300 个字符').nullish(),
 });
 
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;

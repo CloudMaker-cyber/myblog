@@ -9,6 +9,7 @@ import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
 import { MyArticlesPage } from './pages/MyArticlesPage';
 import { NotFoundPage } from './pages/NotFoundPage';
+import { ProfilePage } from './pages/ProfilePage';
 import { RegisterPage } from './pages/RegisterPage';
 import { WritePage } from './pages/WritePage';
 
@@ -45,6 +46,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <MyArticlesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="me"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
             </ProtectedRoute>
           }
         />

@@ -17,6 +17,8 @@ export function AuthorPage() {
   const [user, setUser] = useState<PublicUser | null>(null);
   const [articles, setArticles] = useState<ArticleSummary[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  /** 记录加载失败的那个头像地址：换了地址就重新尝试，不用手动重置 */
+  const [brokenAvatar, setBrokenAvatar] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -62,12 +64,19 @@ export function AuthorPage() {
   }
 
   const initial = user.username.slice(0, 1).toUpperCase();
+  const showAvatar = Boolean(user.avatar_url) && brokenAvatar !== user.avatar_url;
 
   return (
     <div className="wrap author-page">
       <header className="author-head">
-        {user.avatar_url ? (
-          <img className="author-avatar" src={user.avatar_url} alt="" />
+        {showAvatar ? (
+          <img
+            className="author-avatar"
+            src={user.avatar_url ?? ''}
+            alt=""
+            referrerPolicy="no-referrer"
+            onError={() => setBrokenAvatar(user.avatar_url)}
+          />
         ) : (
           <div className="author-avatar author-avatar--fallback" aria-hidden="true">
             {initial}

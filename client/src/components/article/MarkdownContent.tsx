@@ -16,6 +16,13 @@ export function MarkdownContent({ content }: { content: string }) {
             {children}
           </a>
         ),
+        /**
+         * 图片统一不带 Referer：
+         * 很多图床有防盗链，看到陌生来源直接拒；不带 Referer 反而能正常取图。
+         */
+        img: ({ src, alt }) => (
+          <img src={src} alt={alt ?? ''} loading="lazy" referrerPolicy="no-referrer" />
+        ),
       }}
     >
       {content}

@@ -29,6 +29,8 @@ export type AuthContextValue = {
   signIn: (input: LoginInput) => Promise<void>;
   signUp: (input: RegisterInput) => Promise<void>;
   signOut: () => Promise<void>;
+  /** 重新从服务端拉一次用户信息（改完资料后用，保证导航栏和缓存同步） */
+  refresh: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -119,9 +121,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const refresh = useCallback(async () => {
+    const result = await fetchMe();
+    setUser(result.user);
+    saveCachedUser(result.user);
+  }, []);
+
   const value = useMemo<AuthContextValue>(
-    () => ({ user, status, signIn, signUp, signOut }),
-    [user, status, signIn, signUp, signOut],
+    () => ({ user, status, signIn, signUp, signOut, refresh }),
+    [user, status, signIn, signUp, signOut, refresh],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

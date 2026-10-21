@@ -46,7 +46,9 @@ export function SiteLayout() {
               <span className="nav-loading" aria-hidden="true" />
             ) : user ? (
               <>
-                <span className="nav-user">{user.username}</span>
+                <Link to="/me" className="nav-user">
+                  {user.username}
+                </Link>
                 <button type="button" className="link-quiet" onClick={() => void handleSignOut()}>
                   退出
                 </button>

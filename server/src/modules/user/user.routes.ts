@@ -6,9 +6,9 @@ import { requireAuth } from '../../middleware/auth.js';
 import { authLimiter } from '../../middleware/rate-limit.js';
 import { listArticlesQuerySchema } from '../article/article.schema.js';
 import { listPublicArticles } from '../article/article.service.js';
-import { registerSchema, type RegisterInput } from './user.schema.js';
+import { registerSchema, updateProfileSchema, type RegisterInput, type UpdateProfileInput } from './user.schema.js';
 import { findUserById } from './user.repository.js';
-import { register } from './user.service.js';
+import { register, updateProfile } from './user.service.js';
 import { toPublicUser, toSelfUser } from './user.types.js';
 
 export const userRouter = Router();
@@ -30,6 +30,12 @@ userRouter.post('/', authLimiter, validateBody(registerSchema), async (req, res)
 /** GET /api/v1/users/me —— 当前登录用户（必须排在 /:id 之前） */
 userRouter.get('/me', requireAuth, (req, res) => {
   res.json({ user: toSelfUser(req.user!) });
+});
+
+/** PATCH /api/v1/users/me —— 修改头像与简介 */
+userRouter.patch('/me', requireAuth, validateBody(updateProfileSchema), async (req, res) => {
+  const user = await updateProfile(req.user!, req.body as UpdateProfileInput);
+  res.json({ user });
 });
 
 /** GET /api/v1/users/:id —— 作者公开资料，不含邮箱 */

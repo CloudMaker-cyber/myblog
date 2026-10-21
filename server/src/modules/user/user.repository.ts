@@ -80,3 +80,14 @@ export async function createUser(input: {
 export async function bumpTokenVersion(userId: number): Promise<void> {
   await execute('UPDATE users SET token_version = token_version + 1 WHERE id = ?', [userId]);
 }
+
+export async function updateUserProfile(
+  userId: number,
+  input: { avatarUrl: string | null; bio: string | null },
+): Promise<void> {
+  await execute('UPDATE users SET avatar_url = ?, bio = ? WHERE id = ?', [
+    input.avatarUrl,
+    input.bio,
+    userId,
+  ]);
+}

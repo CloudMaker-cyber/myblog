@@ -26,6 +26,8 @@ export function ArticleDetailPage() {
   const [blocked, setBlocked] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
+  /** 记录加载失败的封面地址；换了封面就不会被误判为坏图 */
+  const [brokenCover, setBrokenCover] = useState<string | null>(null);
 
   // 目录从正文里现算，作者不需要手写一遍
   const tocItems = useMemo(() => (article ? extractToc(article.content) : []), [article]);
@@ -179,8 +181,15 @@ export function ArticleDetailPage() {
           </header>
 
           {/* 封面由作者决定：填了 cover_url 才显示；想放在正文里，就不填这个字段，直接用 Markdown 图片 */}
-          {article.cover_url && (
-            <img className="article-cover" src={article.cover_url} alt="" loading="lazy" />
+          {article.cover_url && brokenCover !== article.cover_url && (
+            <img
+              className="article-cover"
+              src={article.cover_url}
+              alt=""
+              loading="lazy"
+              referrerPolicy="no-referrer"
+              onError={() => setBrokenCover(article.cover_url)}
+            />
           )}
 
           {article.show_toc && (

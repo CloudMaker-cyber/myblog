@@ -41,3 +41,12 @@ export function logoutRequest(): Promise<void> {
 export function fetchMe(): Promise<{ user: AuthUser }> {
   return api.get<{ user: AuthUser }>('/users/me');
 }
+
+export type ProfileInput = {
+  avatarUrl: string | null;
+  bio: string | null;
+};
+
+export function updateProfileRequest(input: ProfileInput): Promise<{ user: AuthUser }> {
+  return api.patch<{ user: AuthUser }>('/users/me', input);
+}
