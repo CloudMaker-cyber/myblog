@@ -92,6 +92,8 @@ npm run dev
 | `server` | `npm run typecheck` | 只做类型检查 |
 | `server` | `npm run build` | 编译到 `dist/` |
 | `server` | `npm start` | 运行编译后的代码 |
+| `server` | `npm run seed:demo` | 生成演示账号与文章（可重复执行，已存在会跳过） |
+| `server` | `npm run seed:admin -- 用户名 邮箱 密码` | 创建或提权管理员账号 |
 
 ## 常见报错
 
