@@ -1,8 +1,10 @@
 /**
  * EdgeOne Makers 的路由规则：`cloud-functions/api/[[default]].js` 匹配 `/api/*`。
- * 根目录下的 `[[default]].js` 不在官方映射表里，不会被注册成路由。
  *
- * Express 实例内部挂的是 `/api/v1/...`，平台把原始路径透传进来，所以这里
- * 只要导出 app 即可，不需要自己 listen。
+ * 注意这里必须写成「先 import、再 export default」。
+ * 平台靠静态分析识别入口：`export { default } from '...'` 这种转导出不会被识别，
+ * 结果就是函数不上线、/api/* 全部 404（已实测踩过）。
  */
-export { default } from '../../server/dist/edge.js';
+import app from "../../server/dist/edge.js";
+
+export default app;
