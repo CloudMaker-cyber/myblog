@@ -1,6 +1,7 @@
 import type { RowDataPacket } from 'mysql2';
 
 import { execute, query } from '../../db.js';
+import { limitClause } from '../../lib/pagination-sql.js';
 import type { UserRole, UserStatus } from '../user/user.types.js';
 
 export type AdminUser = {
@@ -51,8 +52,7 @@ export async function listUsersForAdmin(page: number, pageSize: number): Promise
        LEFT JOIN articles a ON a.author_id = u.id
        ${USER_GROUP_BY}
        ORDER BY u.id ASC
-       LIMIT ? OFFSET ?`,
-    [pageSize, offset],
+       ${limitClause(pageSize, offset)}`,
   );
 
   return rows.map(toAdminUser);

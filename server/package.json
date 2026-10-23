@@ -10,7 +10,9 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "seed:admin": "tsx src/scripts/seed-admin.ts",
-    "seed:demo": "tsx src/scripts/seed-demo.ts"
+    "seed:demo": "tsx src/scripts/seed-demo.ts",
+    "db:probe": "node scripts/probe-db.mjs",
+    "db:init": "node scripts/init-remote-db.mjs"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

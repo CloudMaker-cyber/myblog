@@ -2,6 +2,7 @@ import type { ExecuteValues, ResultSetHeader, RowDataPacket } from 'mysql2';
 import type { PoolConnection } from 'mysql2/promise';
 
 import { execute, query } from '../../db.js';
+import { limitClause } from '../../lib/pagination-sql.js';
 import type { ArticleDetail, ArticleStatus, ArticleSummary } from './article.types.js';
 
 type Ctx = PoolConnection | undefined;
@@ -125,8 +126,8 @@ export async function listAllArticles(
   const rows = await query<ArticleRow[]>(
     `SELECT ${ARTICLE_COLUMNS} ${ARTICLE_JOINS} ${clause}
       ORDER BY a.updated_at DESC, a.id DESC
-      LIMIT ? OFFSET ?`,
-    [...params, pageSize, offset],
+      ${limitClause(pageSize, offset)}`,
+    params,
   );
 
   const tagsByArticle = await loadTagsFor(rows.map((row) => row.id));
@@ -196,8 +197,8 @@ export async function listPublishedByTags(
      ) s ON s.article_id = a.id
      ${clause}
      ORDER BY s.score DESC, a.published_at DESC, a.id DESC
-     LIMIT ? OFFSET ?`,
-    [...weightTable.params, ...params, pageSize, offset],
+     ${limitClause(pageSize, offset)}`,
+    [...weightTable.params, ...params],
   );
 
   const tagsByArticle = await loadTagsFor(rows.map((row) => row.id));
@@ -238,8 +239,8 @@ export async function listPublishedArticles(
   const rows = await query<ArticleRow[]>(
     `SELECT ${ARTICLE_COLUMNS} ${ARTICLE_JOINS} ${clause}
       ORDER BY a.published_at DESC, a.id DESC
-      LIMIT ? OFFSET ?`,
-    [...params, pageSize, offset],
+      ${limitClause(pageSize, offset)}`,
+    params,
   );
 
   const tagsByArticle = await loadTagsFor(rows.map((row) => row.id));

@@ -36,13 +36,29 @@ async function main(): Promise<void> {
 
   const passwordHash = await bcrypt.hash(password, 10);
 
-  // 用户名或邮箱已存在时，直接覆盖密码与角色，便于反复执行
-  await execute(
-    `INSERT INTO users (username, email, password_hash, role)
-     VALUES (?, ?, ?, 'admin') AS new
-     ON DUPLICATE KEY UPDATE password_hash = new.password_hash, role = 'admin'`,
-    [username, email, passwordHash],
+  /**
+   * 用户名或邮箱已存在时，直接覆盖密码与角色，便于反复执行。
+   *
+   * 这里刻意不用 `ON DUPLICATE KEY UPDATE ... AS new`：那是 MySQL 8.0.19 才有的别名语法，
+   * TiDB 不支持（实测报语法错误）。改成"先查再决定插入还是更新"，
+   * 任何 MySQL 兼容库都能跑。
+   */
+  const existing = await query<SeedRow[]>(
+    'SELECT id FROM users WHERE username = ? OR email = ? LIMIT 1',
+    [username, email],
   );
+
+  if (existing.length > 0) {
+    await execute("UPDATE users SET password_hash = ?, role = 'admin' WHERE id = ?", [
+      passwordHash,
+      existing[0].id,
+    ]);
+  } else {
+    await execute(
+      "INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, 'admin')",
+      [username, email, passwordHash],
+    );
+  }
 
   const rows = await query<SeedRow[]>(
     'SELECT id, username, email, role FROM users WHERE username = ? OR email = ? LIMIT 1',
