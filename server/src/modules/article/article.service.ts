@@ -22,13 +22,13 @@ import {
 import type { CreateArticleInput, UpdateArticleInput } from './article.schema.js';
 import type { ArticleDetail, ArticleStatus, ArticleSummary } from './article.types.js';
 
+/**
+ * 数据库里统一存 UTC。
+ * 用 toISOString 而不是分别取 local 的年月日——后者取的是"服务器所在时区"，
+ * 本地是 +08 看着对，部署到 UTC 的云服务器就会整体偏 8 小时。
+ */
 function nowSql(): string {
-  const now = new Date();
-  const pad = (value: number): string => String(value).padStart(2, '0');
-  return (
-    `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ` +
-    `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`
-  );
+  return new Date().toISOString().slice(0, 19).replace('T', ' ');
 }
 
 /** 去空、去重、最多 8 个；标签是作者自由填写的，只做必要的收拢 */

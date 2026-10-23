@@ -10,6 +10,11 @@ import { config } from './config.js';
  * dateStrings: true —— 让 DATETIME 以字符串形式返回。
  * 否则 mysql2 会把它转成 JS Date，再按进程时区做一次换算，
  * 前端显示的时间可能莫名差 8 小时。
+ *
+ * 时区策略：**数据库里一律存 UTC**。
+ * 建连接时把会话时区设为 +00:00，这样 MySQL 的 CURRENT_TIMESTAMP（建表时给了默认值）
+ * 产生的也是 UTC，和我们自己写入的时间口径一致。
+ * 前端负责把它转成读者本地时间——见 client/src/lib/format.ts。
  */
 export const pool = createPool({
   host: config.DB_HOST,
@@ -19,9 +24,18 @@ export const pool = createPool({
   database: config.DB_NAME,
   charset: 'utf8mb4',
   waitForConnections: true,
-  connectionLimit: 10,
+  connectionLimit: config.DB_POOL_SIZE,
+  maxIdle: Math.max(1, Math.floor(config.DB_POOL_SIZE / 2)),
+  idleTimeout: 60_000,
+  connectTimeout: 10_000,
   queueLimit: 0,
   dateStrings: true,
+  ...(config.DB_SSL === 'true' ? { ssl: { rejectUnauthorized: true } } : {}),
+});
+
+// 每条新连接建立后统一设置会话时区，避免依赖数据库服务器的默认时区
+pool.on('connection', (connection) => {
+  connection.query("SET time_zone = '+00:00'");
 });
 
 /**

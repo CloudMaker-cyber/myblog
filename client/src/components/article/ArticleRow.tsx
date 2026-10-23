@@ -4,7 +4,7 @@ import {
   ARTICLE_TYPE_LABEL,
   type ArticleSummary,
 } from '../../features/article/article.api';
-import { articleNo, formatMonthDay } from '../../lib/format';
+import { articleNo, formatMonthDay, formatWeekday } from '../../lib/format';
 
 /** 去掉 Markdown 记号，把正文变成一句能直接显示的导语 */
 function toPlainExcerpt(text: string): string {
@@ -19,12 +19,6 @@ function toPlainExcerpt(text: string): string {
   return plain.length > 90 ? `${plain.slice(0, 90)}…` : plain;
 }
 
-function weekdayLabel(value: string): string {
-  const date = new Date(value.replace(' ', 'T'));
-  if (Number.isNaN(date.getTime())) return '';
-  return ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'][date.getDay()] ?? '';
-}
-
 export function ArticleRow({ article }: { article: ArticleSummary }) {
   const published = article.published_at ?? article.created_at;
 
@@ -32,7 +26,7 @@ export function ArticleRow({ article }: { article: ArticleSummary }) {
     <article className="post">
       <div className="post-date">
         {formatMonthDay(published)}
-        <small>{weekdayLabel(published)}</small>
+        <small>{formatWeekday(published)}</small>
       </div>
 
       <div className="post-main">
