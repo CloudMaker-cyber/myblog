@@ -26,12 +26,12 @@ docs/            接口文档与开发进度
 
 ## 首次安装
 
-前端和后端各装一次依赖。**在哪个目录装，就决定依赖装到哪个项目里。**
+前端和后端各装一次依赖。**在哪个目录装，就决定依赖装到哪个项目里**——所以下面每条命令都从仓库根目录出发，先 `cd` 进对应子目录。
 
 ### 1. 前端
 
 ```powershell
-cd D:\code\project\MyBlog\client
+cd client
 npm install react react-dom
 npm install -D vite @vitejs/plugin-react typescript @types/react @types/react-dom tailwindcss @tailwindcss/vite eslint @eslint/js typescript-eslint eslint-plugin-react-hooks eslint-plugin-react-refresh globals
 ```
@@ -41,7 +41,7 @@ npm install -D vite @vitejs/plugin-react typescript @types/react @types/react-do
 ### 2. 后端
 
 ```powershell
-cd D:\code\project\MyBlog\server
+cd server
 npm install express mysql2 zod dotenv helmet
 npm install -D typescript tsx @types/node @types/express eslint @eslint/js typescript-eslint globals
 ```
@@ -66,13 +66,13 @@ DB_PASSWORD=你在 Workbench 里给 myblog_app 设置的密码
 
 ```powershell
 # 窗口 1：后端
-cd D:\code\project\MyBlog\server
+cd server
 npm run dev
 ```
 
 ```powershell
 # 窗口 2：前端
-cd D:\code\project\MyBlog\client
+cd client
 npm run dev
 ```
 
