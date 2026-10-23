@@ -47,7 +47,8 @@
 | 线上部署 | ✅ EdgeOne Makers（国际站，加速区域「全球（不含中国大陆）」），项目域名 `myblog-eqsxswme.edgeone.dev`；推送 main 自动部署 |
 | 线上验证 | ✅ 线上注册/登录/后台可用：登录后导航出现「管理」，后台读到 TiDB 的四个分类 |
 | 生产管理员 | ✅ 用户名 `admin`，密码见本地 `server/.env.production.local`（不入库） |
-| 待办 | 绑定 `tangblog.cn`（实名审核中）、是否导入演示数据、大陆访问速度实测 |
+| 自定义域名 | ✅ `https://tangblog.cn` 已生效（免费证书由平台签发）；HTTP 与 HTTPS 均返回 200，`/api/health` 正常 |
+| 待办 | `www` 子域名未配置、Force HTTPS 未开启、是否导入演示数据 |
 
 ### 部署时踩到的四个坑（都已修）
 
