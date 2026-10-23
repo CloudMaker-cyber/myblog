@@ -49,10 +49,15 @@ async function main(): Promise<void> {
   );
 
   if (existing.length > 0) {
-    await execute("UPDATE users SET password_hash = ?, role = 'admin' WHERE id = ?", [
-      passwordHash,
-      existing[0].id,
-    ]);
+    /**
+     * 重置密码时把 token_version + 1：
+     * JWT 是无状态的，改密码本身不会让已签发的登录票失效。
+     * 版本号一加，中间件比对时旧票全部对不上，等于"改密码 = 踢掉所有旧登录"。
+     */
+    await execute(
+      "UPDATE users SET password_hash = ?, role = 'admin', token_version = token_version + 1 WHERE id = ?",
+      [passwordHash, existing[0].id],
+    );
   } else {
     await execute(
       "INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, 'admin')",
