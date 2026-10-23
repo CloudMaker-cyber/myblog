@@ -94,6 +94,8 @@ npm run dev
 | `server` | `npm start` | 运行编译后的代码 |
 | `server` | `npm run seed:demo` | 生成演示账号与文章（可重复执行，已存在会跳过） |
 | `server` | `npm run seed:admin -- 用户名 邮箱 密码` | 创建或提权管理员账号 |
+| `server` | `npm run db:probe` | 检测目标数据库兼容性（外键、ENUM、排序规则等），读 `.env.tidb` |
+| `server` | `npm run db:init` | 在目标数据库建库并执行 `sql/` 迁移，读 `.env.tidb` |
 
 ## 常见报错
 
