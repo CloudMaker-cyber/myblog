@@ -1,0 +1,12 @@
+{
+  "name": "myblog",
+  "private": true,
+  "version": "1.0.0",
+  "description": "多用户博客平台：前端 React + 后端 Express + MySQL",
+  "scripts": {
+    "install:all": "npm install --prefix client && npm install --prefix server",
+    "build": "npm run build --prefix server && npm run build --prefix client",
+    "build:client": "npm run build --prefix client",
+    "build:server": "npm run build --prefix server"
+  }
+}

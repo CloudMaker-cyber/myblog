@@ -39,7 +39,8 @@
 | 项 | 状态 |
 |---|---|
 | 时区 | ✅ 数据库统一存 UTC（连接时 `SET time_zone = '+00:00'`），前端按浏览器时区显示。已实测：新建文章的 `published_at` 与 UTC 一致 |
-| Serverless 入口 | ✅ `server/src/edge.ts` 导出 app；`server/cloud-functions/[[default]].js` 符合 EdgeOne Makers 约定；本地开发仍走 `index.ts` |
+| Serverless 入口 | ✅ `server/src/edge.ts` 导出 app；根目录 `cloud-functions/[[default]].js` 符合 EdgeOne Makers 约定（函数目录必须在仓库根部）；本地开发仍走 `index.ts` |
+| 一键构建 | ✅ 根目录 `package.json` 提供 `install:all` 与 `build`，云平台只需要填这两条命令 |
 | 连接池参数 | ✅ `DB_POOL_SIZE`（默认 10，Serverless 建议 2–3）、`DB_SSL`（云库置 true） |
 | 云数据库 | ✅ TiDB Cloud Starter（新加坡，$0）已建库并跑完三个迁移；兼容性探测 12 项通过 11 项，唯一不兼容的 `ON DUPLICATE KEY UPDATE ... AS new` 已改写 |
 | 端到端验证 | ✅ 连 TiDB 实测：注册 201、发文 201、列表/详情 200、删除 204、时间戳为 UTC |
