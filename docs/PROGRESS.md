@@ -44,7 +44,19 @@
 | 连接池参数 | ✅ `DB_POOL_SIZE`（默认 10，Serverless 建议 2–3）、`DB_SSL`（云库置 true） |
 | 云数据库 | ✅ TiDB Cloud Starter（新加坡，$0）已建库并跑完三个迁移；兼容性探测 12 项通过 11 项，唯一不兼容的 `ON DUPLICATE KEY UPDATE ... AS new` 已改写 |
 | 端到端验证 | ✅ 连 TiDB 实测：注册 201、发文 201、列表/详情 200、删除 204、时间戳为 UTC |
-| 待办 | EdgeOne 部署、生产管理员账号、域名与备案、是否导入演示数据 |
+| 线上部署 | ✅ EdgeOne Makers（国际站，加速区域「全球（不含中国大陆）」），项目域名 `myblog-eqsxswme.edgeone.dev`；推送 main 自动部署 |
+| 线上验证 | ✅ 线上注册/登录/后台可用：登录后导航出现「管理」，后台读到 TiDB 的四个分类 |
+| 生产管理员 | ✅ 用户名 `admin`，密码见本地 `server/.env.production.local`（不入库） |
+| 待办 | 绑定 `tangblog.cn`（实名审核中）、是否导入演示数据、大陆访问速度实测 |
+
+### 部署时踩到的四个坑（都已修）
+
+| 现象 | 根因 | 解决 |
+|---|---|---|
+| 函数不上线，`/api/*` 全 404 | 函数入口必须在 `cloud-functions/api/[[default]].js`，根级 `[[default]].js` 不在官方路由表里 | 文件挪到 `api/` 子目录 |
+| 目录对了仍不识别 | 平台靠**静态分析**找入口，`export { default } from '...'` 这种转导出不算 | 改成 `import app ...; export default app;` |
+| 函数跑起来但接口 404 | 平台会**剥掉 `/api` 前缀**，Express 收到的是 `/v1/articles` | `server/src/edge.ts` 里补回前缀，并设置 `trust proxy` |
+| 刷新 `/login` 或直接访问子路由 404 | 静态托管没有 SPA 回退 | 根目录 `edgeone.json` 声明 `rewrites: /* → /index.html`（平台识别为 SPA fallback） |
 
 ## 演示数据
 
